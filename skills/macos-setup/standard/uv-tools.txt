@@ -1,0 +1,4 @@
+# uv-tools.txt — Python CLI tools standard (uv tool install)
+# Format: <bin name>TAB<package name>
+nano-pdf	nano-pdf
+xhs	xiaohongshu-cli

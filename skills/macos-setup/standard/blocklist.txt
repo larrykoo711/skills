@@ -1,0 +1,108 @@
+# blocklist.txt — items the standard explicitly rejects.
+# Found on a machine → the report proposes removal; execution is ALWAYS one
+# confirmation per item (cleanup.sh), never automatic. App data is never touched.
+# Format: <type>TAB<name>   type ∈ formula|cask|app|pnpm-g|uv-tool|local-bin
+
+# ── formulas (superseded or retired CLI tools) ──
+formula	autojump
+formula	starship
+formula	sesh
+formula	zsh-autosuggestions
+formula	zsh-syntax-highlighting
+formula	yarn
+formula	openjdk@17
+formula	gradle
+formula	maven
+formula	scala
+formula	groovy
+formula	erlang
+formula	quarkus
+formula	openai-whisper
+formula	espeak-ng
+formula	ko
+formula	tektoncd-cli
+formula	ddns-go
+formula	emqx
+formula	redis
+formula	curl
+formula	opencode
+formula	ollama
+formula	mqttx-cli
+formula	vercel-cli
+formula	yakitrak/yakitrak/obsidian-cli
+formula	danielfoehrkn/switch/switch
+formula	openclaw/tap/wacli
+
+# ── cask ──
+cask	cursor
+cask	warp
+cask	opencode-desktop
+cask	mqttx
+cask	ngrok
+cask	lm-studio
+cask	dingtalk
+cask	notion
+cask	neteasemusic
+cask	mindmac
+cask	redis-insight
+cask	redisinsight
+
+# ── apps (manually installed .app, matched by /Applications name) ──
+app	Eagle
+app	Permute 3
+app	ToDesk
+app	Lens
+app	wechatwebdevtools
+app	Ollama
+app	DingTalk
+app	Notion
+app	Obsidian
+app	flomo
+app	NeteaseMusic
+app	BaiduNetdisk
+app	aDrive
+app	夸克网盘
+app	SideQuest
+app	Darkroom
+app	KeyManager
+app	企业微信
+app	Zed
+app	Warp
+app	LM Studio
+app	JetBrains Toolbox
+app	Apifox
+app	WeChat 2
+app	CC Mate
+app	OpenClaw
+app	Ofox Claw
+app	QClaw
+app	TurboClaw
+app	Clawdy
+app	AnythingLLM
+app	Kiro
+app	KiroAccountManager
+app	TRAE SOLO
+app	QoderWork
+app	Genspark Speakly
+app	牛马AI
+app	CodePilot
+app	Logic Pro
+app	MainStage
+app	MarginNote 3
+app	Notability
+app	Remote Desktop
+app	Cleaner for Xcode
+app	Mactracker
+app	Couverture
+app	Blackmagic Disk Speed Test
+app	Blackmagic RAW Speed Test
+
+# ── Node globals (npm -g leftovers, superseded by pnpm -g) ──
+pnpm-g	openclaw
+
+# ── ~/.local/bin scripts (duplicate usage monitors, consolidated) ──
+local-bin	ccm
+local-bin	ccmonitor
+local-bin	claude-monitor
+local-bin	cmonitor
+local-bin	claude-code-monitor

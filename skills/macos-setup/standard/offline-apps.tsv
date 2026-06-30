@@ -1,0 +1,22 @@
+# offline-apps.tsv — bring-your-own-app standard (single source of truth).
+# Apps you supply yourself as disk images / archives (no Homebrew cask, or a licensed
+# build you already own), staged to the target's Desktop with a bilingual HTML guide;
+# the human installs them (see scripts/stage-offline-apps.sh).
+# These are NOT auto-installed: disk-image layouts vary (app vs nested dmg/pkg vs an
+# installer) and Gatekeeper needs a human — staging + a guide is the reliable path.
+#
+# Point MACOS_SETUP_LOCAL_PKGS (or MACOS_SETUP_PKG_SSH) at the folder holding YOUR files.
+# Replace the example rows below with the apps you supply; filename must match yours.
+# Columns (TAB-separated, 10): filename  app  version  cat_zh  cat_en  desc_zh  desc_en  notes_zh  notes_en  icon
+# icon = Lucide line-icon name, rendered inline by the staging script.
+# General install steps live in the HTML guide; notes_* hold only app-specific tips.
+#
+CleanShot_X_4.8.8.iso	CleanShot X	4.8.8	截图录屏	Screenshot & Recording	替代系统截图的全能工具——滚动截图、标注、贴图、OCR、录屏录 GIF。	All-in-one replacement for macOS screenshots — scrolling capture, annotation, pinning, OCR, screen & GIF recording.	挂载后将 App 拖入"应用程序"；首次打开走右键→打开。	Mount, drag the app to Applications; first launch via right-click → Open.	camera
+PDF_Expert_3.11.1.iso	PDF Expert	3.11.1	PDF 编辑	PDF Editor	快速流畅的 PDF 阅读、批注与编辑——可直接修改正文文字与图片。	Fast, native PDF reading, annotation and editing — change body text and images directly.	通用拖拽安装。	Standard drag-to-Applications install.	file-text
+Permute_4.0.2.iso	Permute	4.0.2	格式转换	Media Conversion	拖进去就转——视频、音频、图片格式互转，无需折腾参数。	Drag-and-drop media converter for video, audio and images — no parameters to fuss over.	ARM 专版；通用拖拽安装。	ARM build; standard drag install.	repeat
+Pixea_8.1.iso	Pixea	8.1	图片查看	Image Viewer	极简图片查看器——快、干净，支持全部常见格式。	Minimal image viewer — fast, clean, supports all common formats.	挂载后直接将 App 拖入"应用程序"。	mount and drag the app to Applications.	image
+Proxyman_6.10.0.iso	Proxyman	6.10.0	网络调试	Network Debugging	原生 HTTP(S) 抓包调试代理——查看/改写请求，类似 Charles 但更现代。	Native HTTP(S) debugging proxy — inspect and rewrite traffic, like Charles but modern.	抓 HTTPS 需在系统钥匙串信任其证书（App 内有引导）。	HTTPS capture needs trusting its cert in Keychain (guided in-app).	globe
+Screen_Studio_3.7.0.iso	Screen Studio	3.7.0	高质录屏	Screen Recording	影棚级录屏——自动缩放跟随、平滑光标，适合做产品演示。	Studio-quality screen recording — automatic zoom and smooth cursor, ideal for product demos.	需授予"屏幕录制"权限（系统设置→隐私与安全性）。	Needs Screen Recording permission (Settings → Privacy & Security).	video
+Sip_4.1.4.iso	Sip	4.1.4	取色器	Color Picker	设计师取色工具——采集、整理、按任意格式导出色板。	Color picker for designers — collect, organize and export palettes in any format.	通用拖拽安装。	Standard drag-to-Applications install.	pipette
+coconutBattery_Plus_4.3.2.iso	coconutBattery Plus	4.3.2	电池健康	Battery Health	电池健康监控 Plus 版——容量、循环次数、历史曲线，并支持 iOS 设备。	Battery health monitor (Plus) — capacity, charge cycles, history; supports iOS devices too.	取代 Brewfile 免费 cask 版；通用拖拽安装。	Replaces the free cask in Brewfile; standard drag install.	battery-charging
+iStat_Menus_7.30.iso	iStat Menus	7.30	系统监控	System Monitor	菜单栏系统监控——CPU/GPU/内存/网络/传感器/电池全覆盖。	Menu-bar system monitor — CPU, GPU, memory, network, sensors and battery.	通用拖拽安装。	Standard drag-to-Applications install.	activity

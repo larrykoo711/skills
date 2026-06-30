@@ -1,0 +1,149 @@
+# ═══════════════════════════════════════════════════════════════════
+# Brewfile.standard — the software standard (single source of truth).
+# Every Mac converges to this file: formulas + casks + mas + taps.
+# Edit THIS file to change the standard; per-machine opt-outs go through
+# the playground order sheet (--exclude-file), never by editing here.
+# Install runs pin versions: HOMEBREW_BUNDLE_NO_UPGRADE=1 (pitfalls #7).
+# ═══════════════════════════════════════════════════════════════════
+
+# ── taps ──
+tap "antoniorodr/memo"
+tap "steipete/tap"
+
+# ── version managers / runtimes ──
+brew "fnm"                  # Node version manager
+brew "goenv"                # Go version manager
+brew "go"
+brew "uv"                   # Python toolchain (env + tools)
+brew "python@3.13"          # pin the minor version — one Python across machines
+brew "pnpm"                 # ALL Node globals go through pnpm -g (node-globals.txt)
+brew "ruby"
+brew "rustup"               # Rust via rustup (rustup-init afterwards is a manual breakpoint)
+
+# ── git / dev core ──
+brew "git"
+brew "gh"
+brew "git-lfs"
+brew "git-delta"
+brew "gitleaks"             # security baseline: secret scanning
+brew "shellcheck"
+brew "golangci-lint"
+
+# ── modern CLI / terminal ──
+brew "tmux"
+brew "zoxide"
+brew "tree"
+brew "wget"
+brew "bat"
+brew "eza"
+brew "fd"
+brew "ripgrep"              # pinned explicitly — never rely on implicit dependency pull-in
+brew "fzf"
+brew "jq"
+brew "yq"
+brew "htop"
+brew "bottom"
+brew "dust"
+brew "procs"
+brew "sd"
+
+# ── cloud / k8s / devops ──
+brew "awscli"
+brew "helm"
+brew "k9s"
+brew "kubectx"              # includes kubens
+brew "kubie"
+brew "stern"
+brew "kubernetes-cli"       # kubectl, pinned explicitly
+brew "kubecm"
+brew "eksctl"
+brew "k6"
+brew "rclone"
+brew "railway"
+brew "aliyun-cli"
+brew "azure-cli"
+brew "cloudflared"
+
+# ── network diagnostics ──
+brew "mtr"
+brew "nexttrace"
+brew "httpie"
+brew "wrk"
+brew "axel"
+brew "sshpass"              # may need a third-party tap — verify at install time
+brew "telnet"
+brew "lrzsz"
+brew "nmap"
+brew "tcping"
+
+# ── media / documents ──
+brew "ffmpeg"
+brew "imagemagick"
+brew "pandoc"
+brew "poppler"
+
+# ── App Store management ──
+brew "mas"
+
+# ── tap utilities ──
+brew "antoniorodr/memo/memo"
+brew "steipete/tap/remindctl"
+brew "steipete/tap/gifgrep"
+brew "steipete/tap/sag"
+brew "steipete/tap/songsee"
+brew "steipete/tap/peekaboo"
+brew "steipete/tap/spogo"
+
+# ═══ casks: standard GUI apps ═══
+cask "raycast"              # launcher standard (hotkey: double-tap ⌘, set inside Raycast)
+cask "ghostty"              # terminal standard
+cask "visual-studio-code"
+cask "claude"               # Claude desktop
+cask "cherry-studio"
+cask "cc-switch"
+cask "sourcetree"
+cask "orbstack"             # container runtime standard
+cask "tailscale"            # adopt only — NEVER uninstall/reinstall (pitfalls #4)
+cask "rustdesk"             # open-source remote desktop (must-have); GPLv3, ships RustDesk.app
+cask "keepingyouawake"
+cask "appcleaner"
+cask "monitorcontrol"
+# coconutbattery — moved to offline-apps.tsv (bring-your-own Plus build); free cask intentionally dropped
+cask "keka"
+cask "imageoptim"
+cask "gas-mask"
+cask "qlmarkdown"
+cask "openineditor-lite"
+cask "openinterminal-lite"
+cask "syntax-highlight"
+cask "wechat"
+cask "feishu"               # Feishu (CN) — cannot adopt, delete old Lark.app first (pitfalls #3)
+cask "lark"                 # Lark (intl) — LarkSuite.app adopts fine
+cask "tencent-meeting"
+cask "discord"
+cask "whatsapp"
+cask "telegram"
+cask "wpsoffice-cn"
+cask "iina"
+cask "google-chrome"
+cask "balenaetcher"
+cask "bambu-studio"
+
+# ═══ no cask · manual install list (pipeline reminds at the end, never blocks) ═══
+# Sogou Pinyin — the standard input method engine; no cask → official pkg:
+#   https://pinyin.sogou.com/mac/  then System Settings → Keyboard → Input Sources
+#   (manual breakpoint, voice reminder)
+# Bring-your-own / no-cask apps (screenshot tool, menu-bar monitor, …) → drop the
+#   installers you supply yourself into the local package folder (see stage-offline-apps.sh)
+
+# ═══ mas: App Store standard (prerequisite: GUI sign-in, checked by precheck) ═══
+mas "Xcode", id: 497799835
+mas "TestFlight", id: 899247664
+mas "Transporter", id: 1450874784
+mas "Developer", id: 640199958
+# iWork: Apple migrated these from the old 4091xxxxx ids to 3613xxxxx (the old ids now
+# return nothing from `mas info`). Use the current ids or compare reports them missing
+# forever and `mas install` fails. (Verified 2026-06 — see pitfalls #23.)
+mas "Keynote", id: 361285480
+mas "Numbers", id: 361304891
+mas "Pages", id: 361309726

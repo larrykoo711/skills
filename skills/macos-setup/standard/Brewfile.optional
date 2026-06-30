@@ -1,0 +1,7 @@
+# ═══════════════════════════════════════════════════════════════════
+# Brewfile.optional — on-demand extras, NOT installed by the pipeline.
+# Ask the user during setup; install only what this machine's role needs.
+# ═══════════════════════════════════════════════════════════════════
+
+cask "gcloud-cli"                # only for machines doing GCP work
+brew "stripe/stripe-cli/stripe"  # only for payments development
