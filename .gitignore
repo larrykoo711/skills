@@ -7,3 +7,6 @@ node_modules/
 .raw/
 *.log
 __pycache__/
+
+# tmux-setup — never commit a user's real machine inventory (real hosts/IPs)
+devices.conf

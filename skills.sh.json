@@ -5,6 +5,11 @@
       "title": "macOS",
       "description": "Standard-driven macOS setup with macos-setup: declare your Mac once in a standard, then converge any machine to it — read-only audit, interactive decision report, idempotent pipeline with human checkpoints, every write verified.",
       "skills": ["macos-setup"]
+    },
+    {
+      "title": "Terminal",
+      "description": "A consistent terminal standard with tmux-setup: tmux config, an interactive fzf-driven session manager, and tmuxinator templates, pushed to one or many machines over SSH — idempotent, diff-confirmed, cross-platform (macOS / Ubuntu / OpenWrt).",
+      "skills": ["tmux-setup"]
     }
   ]
 }

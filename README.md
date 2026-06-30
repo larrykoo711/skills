@@ -20,6 +20,7 @@ Or a single skill:
 
 ```
 npx skills add larrykoo711/skills@macos-setup
+npx skills add larrykoo711/skills@tmux-setup
 ```
 
 ## Skills
@@ -27,6 +28,7 @@ npx skills add larrykoo711/skills@macos-setup
 | Skill | Group | Description |
 |-------|-------|-------------|
 | [macos-setup](skills/macos-setup/SKILL.md) | macOS | Standard-driven macOS setup: declare your Mac once in a `standard/`, then converge any machine to it — read-only audit, interactive decision report, idempotent pipeline with explicit human checkpoints, and every defaults/hotkey write read back to confirm it took. |
+| [tmux-setup](skills/tmux-setup/SKILL.md) | Terminal | Deploy a consistent terminal standard — tmux config, an interactive `t` session manager, and tmuxinator templates — to one or many machines over SSH. Idempotent, diff-confirmed, one host at a time; handles macOS / Ubuntu / OpenWrt. |
 
 ## Why a monorepo
 
