@@ -1,0 +1,10 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "groupings": [
+    {
+      "title": "macOS",
+      "description": "Standard-driven macOS setup with macos-setup: declare your Mac once in a standard, then converge any machine to it — read-only audit, interactive decision report, idempotent pipeline with human checkpoints, every write verified.",
+      "skills": ["macos-setup"]
+    }
+  ]
+}
