@@ -1,0 +1,67 @@
+# hotkeys.tsv — keyboard shortcut baseline (com.apple.symbolichotkeys)
+# Single source of truth: d06-keybindings.sh writes it; verify.sh / collect.sh /
+# compare.sh read it. Edit THIS file to change the shortcut standard.
+# Format: <id>TAB<true|false>TAB<description>TAB<description_zh>
+# Lines starting with # are ignored. The zh column feeds the bilingual report.
+# Read/write methods and rationale: references/keybindings-standard.md
+
+# ── Launcher & search — a launcher app owns search; Spotlight hotkeys off ──
+64	false	Spotlight search (launcher app replaces it)	Spotlight 搜索（交给启动器）
+65	false	Spotlight Finder search window	Spotlight Finder 搜索窗口
+
+# ── Input sources — Globe key only (61 also carries full key parameters, see d06) ──
+60	false	Previous input source (legacy Ctrl-Space)	上一个输入法（旧 ⌃Space）
+61	true	Select next input source = Globe key	切换输入法 = 🌐 地球键
+
+# ── Screenshots — delegated to a dedicated screenshot app ──
+28	false	Save picture of screen as file (Shift-Cmd-3)	屏幕截图存文件（⇧⌘3）
+29	false	Copy picture of screen to clipboard	屏幕截图到剪贴板
+30	false	Save picture of window as file (Shift-Cmd-4)	窗口截图存文件（⇧⌘4）
+31	false	Copy picture of window to clipboard	窗口截图到剪贴板
+184	false	Screenshot and recording options (Shift-Cmd-5)	截图与录屏选项（⇧⌘5）
+
+# ── Mission Control & Spaces ──
+32	false	Mission Control	调度中心
+33	false	Application windows	应用程序窗口
+34	false	Mission Control (alternate)	调度中心（备选）
+35	false	Application windows (alternate)	应用程序窗口（备选）
+36	false	Show Desktop	显示桌面
+79	false	Move left a space (Ctrl-Left)	左移一个空间（⌃←）
+80	true	Move right a space (Ctrl-Right)	右移一个空间（⌃→）
+81	false	Move left a space (alternate)	左移一个空间（备选）
+82	true	Move right a space (alternate)	右移一个空间（备选）
+52	false	Turn Dock hiding on/off	开关 Dock 自动隐藏
+27	false	Move focus to next window (Cmd-`)	切换到下一窗口（⌘`）
+
+# ── Keyboard focus navigation — unused, all off ──
+7	false	Keyboard focus: menu bar	键盘焦点：菜单栏
+8	false	Keyboard focus: Dock	键盘焦点：Dock
+9	false	Keyboard focus: active or next window	键盘焦点：活跃/下一窗口
+10	false	Keyboard focus: window toolbar	键盘焦点：窗口工具栏
+11	false	Keyboard focus: floating window	键盘焦点：浮动窗口
+12	false	Keyboard focus navigation (legacy)	键盘焦点导航（旧）
+13	false	Keyboard focus navigation (legacy)	键盘焦点导航（旧）
+57	false	Move focus to status menus	焦点移到状态菜单
+
+# ── Accessibility zoom — toggle / in / out / smoothing on, the rest off ──
+15	true	Zoom: toggle	缩放：开关
+17	true	Zoom: zoom in	缩放：放大
+19	true	Zoom: zoom out	缩放：缩小
+23	true	Zoom: image smoothing	缩放：图像平滑
+16	false	Accessibility zoom (alternate)	辅助缩放（备选）
+18	false	Accessibility zoom (alternate)	辅助缩放（备选）
+20	false	Accessibility zoom (alternate)	辅助缩放（备选）
+21	false	Invert colors	反转颜色
+22	false	Accessibility zoom (alternate)	辅助缩放（备选）
+24	false	Contrast up	对比度增
+25	false	Contrast down	对比度减
+26	false	Accessibility zoom (alternate)	辅助缩放（备选）
+
+# ── System features ──
+55	true	Zoom shortcut	缩放快捷键
+56	true	Zoom shortcut (alternate)	缩放快捷键（备选）
+175	false	Dictation	听写
+248	true	Window tiling	窗口平铺
+249	true	Window tiling (variant)	窗口平铺（变体）
+250	true	Window tiling (variant)	窗口平铺（变体）
+251	true	Window tiling (variant)	窗口平铺（变体）

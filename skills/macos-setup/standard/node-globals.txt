@@ -1,0 +1,7 @@
+# node-globals.txt — Node global packages standard (pnpm add -g only; npm -g is retired)
+# Format: <bin name>TAB<pnpm package name>
+vercel	vercel
+codex	@openai/codex
+cline	cline
+gemini	@google/gemini-cli
+wrangler	wrangler

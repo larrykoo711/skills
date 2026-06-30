@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>macos-setup · device vs standard</title>
+<style>
+  :root {
+    --bg:#f7f6f3; --surface:#fff; --surface2:#faf9f6; --hair:#e3e0d8; --hairs:#eceae3;
+    --ink:#2b2a27; --body:#5b594f; --muted:#8a877c; --mutes:#a8a59a;
+    --em:#4f9d7e; --grn:#5a9b6f; --ylw:#b08828; --red:#bd6a5a; --blu:#5a7fa3;
+    --mono:ui-monospace,'JetBrains Mono',Menlo,monospace; --sans:-apple-system,'PingFang SC',sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--body);font-family:var(--sans);line-height:1.6}
+  .wrap{width:100%;padding:0 clamp(20px,3vw,64px)}
+  header{padding:44px 0 24px;border-bottom:1px solid var(--hairs)}
+  h1{font-size:clamp(26px,3.5vw,38px);color:var(--ink);letter-spacing:-.02em}
+  h1 b{color:var(--em)}
+  .sub{color:var(--muted);margin-top:8px;font-size:14px}
+  .sub code{font-family:var(--mono);color:var(--em)}
+  section{padding:28px 0;border-bottom:1px solid var(--hairs)}
+  .modbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:rgba(247,246,243,.92);backdrop-filter:blur(12px);border:1px solid var(--hair);
+    border-radius:12px;padding:10px 16px;margin:14px 0;font-family:var(--mono);font-size:12.5px;
+    box-shadow:0 4px 18px rgba(43,42,39,.06)}
+  .modbar .t{color:var(--ink);font-weight:600}
+  .modbar b{color:var(--em)}
+  .modbar .sp{flex:1}
+  /* step badge: numbered phase marker, one per module (⓪ prereq, ① onward) */
+  .step-no{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;
+    width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper,#f7f6f3);
+    font-family:var(--mono);font-size:12px;font-weight:600;margin-right:2px}
+  .step-no.done{background:var(--grn)}
+  section.locked .step-no{background:var(--muted)}
+  .modbar button{font-family:var(--mono);font-size:12px;border:0;border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:500}
+  .b-copy{background:var(--em);color:#fff}.b-copy:hover{filter:brightness(1.06)}.b-copy.done{background:var(--grn)}
+  .b-reset{background:var(--hairs);color:var(--muted)}
+  /* pill switch: pending / all */
+  .vswitch{display:inline-flex;border:1px solid var(--hair);border-radius:100px;overflow:hidden;background:var(--surface2)}
+  .vswitch button{font-family:var(--mono);font-size:11px;padding:6px 14px;border:0;background:transparent;color:var(--muted);cursor:pointer;border-radius:100px}
+  .vswitch button.on{background:var(--ink);color:#f4f2ec;font-weight:600}
+  tr.hidden-ok{display:none}
+  .tw{border:1px solid var(--hair);border-radius:12px;overflow:hidden;background:var(--surface)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+  th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    background:var(--surface2);padding:10px 14px;text-align:left}
+  th:nth-child(1){width:26%}th:nth-child(2){width:10%}th:nth-child(3){width:14%}th:nth-child(4){width:26%}th:nth-child(5){width:24%}
+  td{padding:9px 14px;border-top:1px solid var(--hairs);vertical-align:middle;overflow-wrap:break-word}
+  td.n{color:var(--ink);font-weight:600}
+  .mono{font-family:var(--mono);font-size:12px}
+  .k-install{color:var(--em)}.k-remove{color:var(--red)}.k-config{color:var(--blu)}.k-ok{color:var(--mutes)}.k-keep{color:var(--muted)}
+  tr.row-ok td{opacity:.55}
+  tr.rejected td{opacity:.45;text-decoration:line-through}
+  tr.rejected td.dec{text-decoration:none;opacity:1}
+  .seg{display:inline-flex;border:1px solid var(--hair);border-radius:8px;overflow:hidden;vertical-align:middle}
+  .seg button{font-family:var(--mono);font-size:11px;padding:5px 10px;border:0;background:var(--surface2);color:var(--muted);cursor:pointer}
+  .seg button.on-yes{background:rgba(79,157,126,.15);color:var(--em);font-weight:700}
+  .seg button.on-no{background:rgba(189,106,90,.15);color:var(--red);font-weight:700}
+  .note-in{font-family:var(--mono);font-size:11.5px;border:1px dashed var(--hair);border-radius:7px;
+    padding:5px 8px;margin-left:6px;width:46%;background:var(--surface2);color:var(--ink)}
+  .note-in:focus{outline:none;border:1.5px solid var(--em)}
+  .pill{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px}
+  .p-i{background:rgba(79,157,126,.12);color:var(--em)}.p-r{background:rgba(189,106,90,.12);color:var(--red)}
+  .p-c{background:rgba(90,127,163,.12);color:var(--blu)}.p-o{background:rgba(90,160,115,.1);color:var(--grn)}
+  .p-k{background:var(--hairs);color:var(--muted)}
+  footer{padding:28px 0 60px;font-family:var(--mono);font-size:12px;color:var(--mutes)}
+  /* prerequisite gate */
+  .pre-sec .tw{border-color:rgba(189,106,90,.35)}
+  .pre-item{display:flex;gap:10px;align-items:flex-start;padding:10px 16px;border-top:1px solid var(--hairs);font-size:13.5px}
+  .pre-item:first-child{border-top:0}
+  .pre-item .st{font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;flex:none;margin-top:1px}
+  .st-pass{background:rgba(90,160,115,.12);color:var(--grn)}
+  .st-block{background:rgba(189,106,90,.16);color:var(--red)}
+  .st-manual{background:rgba(176,136,40,.15);color:var(--ylw)}
+  .gate-banner{border:1.5px solid rgba(189,106,90,.4);background:rgba(189,106,90,.07);border-radius:12px;
+    padding:14px 18px;margin:14px 0;font-size:14px;color:var(--ink)}
+  .gate-banner b{color:var(--red)}
+  body.gated section.locked{pointer-events:none;filter:grayscale(.5);opacity:.38;user-select:none}
+  /* language capsule switch — sliding thumb; auto-detected, manual choice persists */
+  .langsw{position:fixed;top:14px;right:14px;z-index:60;display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);background:rgba(255,255,255,.88);backdrop-filter:blur(10px);
+    border:1px solid var(--hair);border-radius:100px;padding:5px 6px 5px 12px;
+    box-shadow:0 2px 12px rgba(43,42,39,.08)}
+  .langsw .g{font-size:14px;line-height:1}
+  .langsw .track{position:relative;display:inline-flex;background:var(--surface2);
+    border:1px solid var(--hairs);border-radius:100px}
+  .langsw .thumb{position:absolute;top:2px;left:2px;width:calc(50% - 2px);height:calc(100% - 4px);
+    background:var(--ink);border-radius:100px;transition:transform .25s cubic-bezier(.4,0,.2,1)}
+  .langsw.zh .thumb{transform:translateX(100%)}
+  .langsw .track button{position:relative;z-index:1;width:52px;padding:6px 0;border:0;background:transparent;
+    font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;transition:color .25s;border-radius:100px}
+  .langsw .track button.on{color:#f4f2ec;font-weight:600}
+</style>
+</head>
+<body>
+<div class="langsw" id="langsw" role="group" aria-label="Language">
+  <span class="g">🌐</span>
+  <span class="track"><span class="thumb"></span><button data-lang="en">EN</button><button data-lang="zh">中文</button></span>
+</div>
+<div class="wrap">
+  <header>
+    <h1 id="h1"></h1>
+    <p class="sub" id="sub"></p>
+  </header>
+  <div id="app"></div>
+  <footer id="foot"></footer>
+</div>
+<script>
+const DATA = __SETUP_DATA__;
+
+/* ── i18n: UI chrome ── */
+const I18N = {
+  en: {
+    htmlLang: 'en', docTitle: 'macos-setup · device vs standard', vs: 'vs standard',
+    sub: d => `Device compared against the declared standard · pending items default to <strong style="color:var(--ink)">approved</strong> — reject or annotate per row · when done, click <code>Copy for Claude Code</code> · generated ${d}`,
+    foot: 'macos-setup · read-only report · standard source: standard/',
+    prereq: 'Prerequisites', met: 'met',
+    hint: 'fix these, then re-run compare.sh to refresh',
+    gate: n => `<b>⛔ ${n} prerequisite(s) unmet</b> — complete the items below, then have Claude re-run the comparison. All other sections stay locked until then.`,
+    removeFirst: n => `<b>🗑 Do removals first — ${n} item(s) to uninstall.</b> Clear the rejected items <em>before</em> installing, so the new setup never picks up a dependency on something about to be deleted. The removals section is at the top for this reason.`,
+    st: {pass: '✓ pass', block: '✗ blocker', manual: '⚠ assist', info: 'ℹ on-site'},
+    pending: 'pending', rejected: 'rejected', vTodo: 'Pending', vAll: 'All',
+    reset: 'Approve all', copy: '📋 Copy for Claude Code', copied: '✓ Copied',
+    th: ['Item', 'Type', 'Current', 'Action', 'Decision (default approve)'],
+    approve: '✓ Approve', reject: '✗ Reject', keep: '✓ Keep', remove: '🗑 Remove',
+    note: 'note…',
+    pills: {install: 'install', remove: 'remove', removed: 'removed ✓', config: 'baseline', ok: 'ok', keep: 'keep'},
+  },
+  zh: {
+    htmlLang: 'zh-CN', docTitle: 'macos-setup · 设备 vs 标准', vs: 'vs 标准',
+    sub: d => `设备与既定标准逐项对比 · 待办项<strong style="color:var(--ink)">默认全部同意</strong>——可逐行拒绝或备注 · 完成后点 <code>Copy for Claude Code</code> 执行装配流水线 · 生成于 ${d}`,
+    foot: 'macos-setup · 只读报告 · 标准源 standard/',
+    prereq: '前置条件', met: '满足',
+    hint: '解决后重跑 compare.sh 刷新本报告',
+    gate: n => `<b>⛔ ${n} 项前置条件未满足</b>——请先完成下列协助项，然后让 Claude 重跑对比；满足前后续模块保持锁定。`,
+    removeFirst: n => `<b>🗑 请先做卸载——共 ${n} 项待卸载。</b>在安装<em>之前</em>先清掉这些标准外/明确不要的项，避免新装的东西依赖到马上要删的工具。卸载模块已置于报告最前正是出于此。`,
+    st: {pass: '✓ 满足', block: '✗ 阻断', manual: '⚠ 需协助', info: 'ℹ 在场'},
+    pending: '待办', rejected: '拒绝', vTodo: '待决策', vAll: '全部',
+    reset: '全部同意', copy: '📋 复制给 Claude Code', copied: '✓ 已复制',
+    th: ['项目', '类型', '现状', '动作', '决定（默认同意）'],
+    approve: '✓ 同意', reject: '✗ 拒绝', keep: '✓ 保留', remove: '🗑 卸载',
+    note: '备注…',
+    pills: {install: '安装', remove: '卸载', removed: '已卸载 ✓', config: '配置', ok: '已达标', keep: '保留'},
+  },
+};
+
+/* data-enum translations (current/action strings emitted by compare.sh) */
+const PHRASES_ZH = {
+  'missing': '未装', 'present': '存在', 'compliant': '已达标', '✓ installed': '✓ 已装',
+  'keep (off-standard)': '保留（标准外）', '<unset>': '<未设>', '<not collected>': '<未采集>',
+};
+const PATTERNS_ZH = [
+  [/^apply baseline → (.+) \(write \+ read back\)$/, m => `写基线 → ${m[1]}（写后回读）`],
+  [/^mas install (\d+) \(App Store sign-in required\)$/, m => `mas install ${m[1]}（需已登录 App Store）`],
+  [/^remove (.+)$/, m => `删除 ${m[1]}`],
+];
+
+/* ── language: saved choice → browser language → en ── */
+let LANG = localStorage.getItem('macos-setup-lang');
+if (LANG !== 'en' && LANG !== 'zh')
+  LANG = (navigator.language || 'en').toLowerCase().startsWith('zh') ? 'zh' : 'en';
+
+const t = () => I18N[LANG];
+const trX = s => {
+  if (LANG === 'en' || !s) return s;
+  if (PHRASES_ZH[s]) return PHRASES_ZH[s];
+  for (const [re, fn] of PATTERNS_ZH) { const m = s.match(re); if (m) return fn(m); }
+  return s;
+};
+const rowName  = r   => (LANG === 'zh' && r.name_zh) ? r.name_zh : r.name;
+const secTitle = sec => (LANG === 'zh' && sec.title_zh) ? sec.title_zh : sec.title;
+
+/* ── decision state, independent of rendering (survives language switches) ── */
+const recs = new Map();   // "si:ri" -> {agree, note}
+const views = new Map();  // si -> pending-only view?
+DATA.sections.forEach((sec, si) => {
+  // Default view = All: show the COMPLETE inventory, with done rows marked (dimmed + ✓),
+  // not hidden. A reviewer wants the full picture ("9 offline apps, 6 done, 3 to go"), not
+  // a Pending-only view that makes a section look like it only ever had 3 items. The
+  // Pending pill is still there to filter down to just the actionable rows on demand.
+  views.set(si, false);
+  sec.rows.forEach((_, ri) => recs.set(si + ':' + ri, {agree: true, note: ''}));
+});
+const pre = DATA.prechecks || [];
+const unmet = pre.filter(p => p.status === 'block' || p.status === 'manual');   // info is not a gate
+const gated = unmet.length > 0;
+if (gated) document.body.classList.add('gated');
+
+/* ── render (called on load and on every language switch) ── */
+function renderAll() {
+  document.documentElement.lang = t().htmlLang;
+  document.title = t().docTitle;
+  document.getElementById('h1').innerHTML = `macos-setup · <b>${DATA.host}</b> ${t().vs}`;
+  document.getElementById('sub').innerHTML = t().sub(DATA.date);
+  document.getElementById('foot').textContent = t().foot;
+  const sw = document.getElementById('langsw');
+  sw.classList.toggle('zh', LANG === 'zh');   // slides the capsule thumb
+  sw.querySelectorAll('.track button').forEach(b => b.classList.toggle('on', b.dataset.lang === LANG));
+
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+
+  /* ⓪ prerequisites (first module): any unmet item locks all interaction below */
+  if (pre.length) {
+    const ps = document.createElement('section');
+    ps.className = 'pre-sec';
+    ps.innerHTML = `<div class="modbar"><span class="step-no${unmet.length ? '' : ' done'}">0</span><span class="t">${t().prereq}</span>
+        <span>${t().met} <b>${pre.length - unmet.length}</b>/${pre.length}</span><span class="sp"></span>
+        <span class="mono" style="font-size:11px;color:var(--mutes)">${t().hint}</span></div>
+      ${gated ? `<div class="gate-banner">${t().gate(unmet.length)}</div>` : ''}
+      <div class="tw">${pre.map(p => {
+        const cls = {pass: 'st-pass', block: 'st-block', manual: 'st-manual', info: 'st-manual'}[p.status] || 'st-manual';
+        const label = t().st[p.status] || t().st.manual;
+        const desc = (LANG === 'zh' && p.desc_zh) ? p.desc_zh : p.desc;
+        return `<div class="pre-item"><span class="st ${cls}">${label}</span><span>${desc}</span></div>`;
+      }).join('')}</div>`;
+    app.appendChild(ps);
+  }
+
+  /* removals-first nudge: only when prerequisites are clear (a gate already owns the
+     user's attention) and there are items to uninstall. The removals section is already
+     ordered first by compare.sh; this banner says why and tells the user to act on it. */
+  if (!gated) {
+    const removeCount = DATA.sections.reduce((n, sec) =>
+      n + sec.rows.filter(r => r.kind === 'remove').length, 0);
+    if (removeCount > 0) {
+      const rb = document.createElement('div');
+      rb.className = 'gate-banner';
+      rb.style.borderColor = 'rgba(189,106,90,.4)';
+      rb.innerHTML = t().removeFirst(removeCount);
+      app.appendChild(rb);
+    }
+  }
+
+  DATA.sections.forEach((sec, si) => {
+    const todo = sec.rows.filter(r => ['install','remove','config'].includes(r.kind)).length;
+    const s = document.createElement('section');
+    if (gated) s.classList.add('locked');
+    // Step number: prerequisites is ⓪, content modules count 1..N in render order.
+    // Badge goes green when the module has no pending work left (a finished phase).
+    const stepDone = todo === 0 ? ' done' : '';
+    s.innerHTML = `<div class="modbar"><span class="step-no${stepDone}">${si + 1}</span><span class="t">${secTitle(sec)}</span>
+      <span>${t().pending} <b class="cnt">${todo}</b> · ${t().rejected} <b class="rej">0</b></span>
+      <span class="sp"></span>
+      <span class="vswitch"><button class="v-todo">${t().vTodo}</button><button class="v-all">${t().vAll}</button></span>
+      <button class="b-reset">${t().reset}</button><button class="b-copy">${t().copy}</button></div>
+      <div class="tw"><table><thead><tr>${t().th.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody></tbody></table></div>`;
+    const tb = s.querySelector('tbody');
+    const syncRej = () => {
+      s.querySelector('.rej').textContent =
+        sec.rows.filter((_, ri) => !recs.get(si + ':' + ri).agree).length;
+    };
+    sec.rows.forEach((r, ri) => {
+      const rec = recs.get(si + ':' + ri);
+      const tr = document.createElement('tr');
+      const pc = {install: 'p-i', remove: 'p-r', removed: 'p-o', config: 'p-c', ok: 'p-o', keep: 'p-k'}[r.kind] || 'p-k';
+      // `done` kinds are terminal — already satisfied this run: ok (install target met)
+      // and removed (blocklist item gone). No decision, dimmed, hidden in Pending view.
+      const done = r.kind === 'ok' || r.kind === 'removed';
+      const actionable = !done;
+      const isKeep = r.kind === 'keep';   // keep rows decide keep vs remove; others approve vs reject
+      tr.className = done ? 'row-ok' : '';
+      if (actionable && !rec.agree) tr.classList.add('rejected');
+      tr.innerHTML = `<td class="n">${rowName(r)}</td><td class="mono">${r.type}</td>
+        <td class="mono">${trX(r.current)}</td><td class="mono k-${r.kind}"><span class="pill ${pc}">${t().pills[r.kind] || r.kind}</span> ${trX(r.action)}</td>
+        <td class="dec">${actionable ? `<span class="seg"><button class="yes${rec.agree ? ' on-yes' : ''}">${isKeep ? t().keep : t().approve}</button><button class="no${rec.agree ? '' : ' on-no'}">${isKeep ? t().remove : t().reject}</button></span>
+        <input class="note-in" placeholder="${t().note}">` : '<span class="mono" style="color:var(--mutes)">—</span>'}</td>`;
+      if (actionable) {
+        const yes = tr.querySelector('.yes'), no = tr.querySelector('.no'), inp = tr.querySelector('.note-in');
+        inp.value = rec.note;
+        const sync = () => {
+          yes.classList.toggle('on-yes', rec.agree); no.classList.toggle('on-no', !rec.agree);
+          tr.classList.toggle('rejected', !rec.agree);
+          syncRej();
+        };
+        yes.onclick = () => { rec.agree = true; sync(); };
+        no.onclick = () => { rec.agree = false; sync(); };
+        inp.oninput = () => { rec.note = inp.value.trim(); };
+      }
+      tb.appendChild(tr);
+    });
+    syncRej();
+
+    /* pill switch: "Pending" hides compliant rows to focus on decisions */
+    const vTodo = s.querySelector('.v-todo'), vAll = s.querySelector('.v-all');
+    const applyView = todoOnly => {
+      views.set(si, todoOnly);
+      vTodo.classList.toggle('on', todoOnly); vAll.classList.toggle('on', !todoOnly);
+      s.querySelectorAll('tbody tr.row-ok').forEach(tr => tr.classList.toggle('hidden-ok', todoOnly));
+    };
+    vTodo.onclick = () => applyView(true);
+    vAll.onclick = () => applyView(false);
+    applyView(views.get(si));
+
+    s.querySelector('.b-reset').onclick = () => {
+      sec.rows.forEach((_, ri) => { recs.get(si + ':' + ri).agree = true; });
+      s.querySelectorAll('tbody tr').forEach(tr => tr.classList.remove('rejected'));
+      s.querySelectorAll('.yes').forEach(b => b.classList.add('on-yes'));
+      s.querySelectorAll('.no').forEach(b => b.classList.remove('on-no'));
+      syncRej();
+    };
+    s.querySelector('.b-copy').onclick = async e => {
+      const txt = buildPrompt(si);
+      try { await navigator.clipboard.writeText(txt); } catch (_) {
+        const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove();
+      }
+      e.target.textContent = t().copied; e.target.classList.add('done');
+      setTimeout(() => { e.target.textContent = t().copy; e.target.classList.remove('done'); }, 2200);
+    };
+    app.appendChild(s);
+  });
+}
+
+/* ── order sheet export: ALWAYS English — a stable contract for the agent ── */
+function removeCmd(r) {
+  return { formula: `brew uninstall ${r.name}`, cask: `brew uninstall --cask ${r.name}` }[r.type]
+    || `remove /Applications/${r.name}.app`;
+}
+function buildPrompt(si) {
+  const sec = DATA.sections[si];
+  // exclude terminal states (ok / removed) — already satisfied, nothing to execute.
+  const rows = sec.rows.map((r, ri) => ({...r, ...recs.get(si + ':' + ri)})).filter(r => r.kind !== 'ok' && r.kind !== 'removed');
+  let out = `# macos-setup order sheet — ${DATA.host} · ${sec.title}\n\n`;
+  out += `> Exported from the device-vs-standard report (${DATA.date}). Trigger the macos-setup skill and run the pipeline:\n`;
+  out += `> approved items execute by action (installs via adopt + bundle, idempotent; baseline writes are read back and verified);\n`;
+  out += `> removals are confirmed one by one; rejected items are skipped — their tokens go into the exclude file verbatim.\n`;
+  out += `> On manual breakpoints, remind the user by voice (3 reminders max, then wait silently).\n\n`;
+  const std = rows.filter(r => r.kind !== 'keep');
+  const extra = rows.filter(r => r.kind === 'keep');
+  const agreed = std.filter(r => r.agree), rejected = std.filter(r => !r.agree);
+  const extraRemove = extra.filter(r => !r.agree), extraKeep = extra.filter(r => r.agree);
+  if (agreed.length) {
+    out += `## ✅ Approved (${agreed.length})\n`;
+    agreed.forEach(r => { out += `- [ ] ${r.name} (${r.type}) → ${r.action}${r.note ? `  | note: ${r.note}` : ''}\n`; });
+  }
+  if (extraRemove.length) {
+    out += `\n## 🗑 Off-standard — user chose removal (${extraRemove.length}, confirm each)\n`;
+    extraRemove.forEach(r => { out += `- [ ] ${r.name} (${r.type}) → ${removeCmd(r)}${r.note ? `  | note: ${r.note}` : ''}\n`; });
+  }
+  if (rejected.length) {
+    out += `\n## ⛔ Rejected — skip (${rejected.length}; exclude tokens below)\n`;
+    rejected.forEach(r => {
+      const tok = r.id || r.name;
+      out += `- ${tok}${tok !== r.name ? `  (${r.name})` : ''}${r.note ? `  | reason: ${r.note}` : ''}\n`;
+    });
+  }
+  if (extraKeep.length) {
+    out += `\n## 📦 Off-standard — keep (${extraKeep.length}; untouched. Recurs across machines? consider adding it to the standard)\n`;
+    const noted = extraKeep.filter(r => r.note);
+    out += `${extraKeep.map(r => r.name).join(' · ')}\n`;
+    noted.forEach(r => { out += `- ${r.name} | note: ${r.note}\n`; });
+  }
+  out += `\nWhen done, output the convergence checklist (each item ✅/❌ + command + read-back value).\n`;
+  return out;
+}
+
+/* ── language capsule switch: click a side, the thumb slides, choice persists ── */
+document.querySelectorAll('#langsw .track button').forEach(b => {
+  b.onclick = () => {
+    if (b.dataset.lang === LANG) return;
+    LANG = b.dataset.lang;
+    localStorage.setItem('macos-setup-lang', LANG);
+    renderAll();
+  };
+});
+
+renderAll();
+</script>
+</body>
+</html>
