@@ -1,5 +1,5 @@
 # t — tmux session tools
-# version: 0.1.0
+# version: 0.2.0
 # author:  larrykoo711
 # desc:    One nice tmux tool.
 # deps:    tmux, fzf, tmuxinator, sesh, zoxide

@@ -293,7 +293,7 @@ t() {
       tmux attach -t "$name"
       ;;
     kill|stop) tmux kill-session -t "${2:?session name required}" ;;
-    --version) echo "t 0.1.0 (OpenWrt minimal)" ;;
+    --version) echo "t 0.2.0 (OpenWrt minimal)" ;;
     "")
       # Attach to the first session, or create one
       local first
