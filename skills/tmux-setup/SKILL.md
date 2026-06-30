@@ -1,5 +1,6 @@
 ---
 name: tmux-setup
+version: 0.2.0
 description: Deploys a consistent terminal standard — tmux config, an interactive `t` session manager, and tmuxinator project templates — across one or many machines over SSH, idempotently and with per-file diff confirmation. Handles macOS (Homebrew), Ubuntu (apt), and OpenWrt (opkg) differences. Use when setting up tmux on a new machine, syncing a tmux/tmuxinator/`t` CLI config to remote hosts, standardizing terminals across several machines, or onboarding a server's shell environment (tmux setup, 终端标准, tmux 配置同步, 多机终端). Not for one-off `tmux` installs you'd do by hand, or for managing tmux at runtime.
 ---
 
@@ -137,6 +138,7 @@ The `claude` window is a convention — rename or drop it freely.
   path / `t.zsh` variant / tmuxinator template mapping, and SSH-key resolution.
 - [references/pitfalls.md](references/pitfalls.md) — seven field-tested traps
   (macOS Ruby EACCES, old apt fzf, mesh-vs-LAN addressing, and more).
+- [CHANGELOG.md](CHANGELOG.md) — version history (currently v0.2.0).
 
 ---
 
