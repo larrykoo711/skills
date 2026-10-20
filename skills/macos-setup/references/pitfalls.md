@@ -4,7 +4,7 @@ Every entry below was hit in real setup runs. The scripts already encode the
 countermeasures; this file explains *why* they look the way they do.
 
 <details>
-<summary><strong>Contents</strong> — 47 pitfalls (click to expand)</summary>
+<summary><strong>Contents</strong> — 53 pitfalls (click to expand)</summary>
 
 - [1. `defaults write` fails SILENTLY on modern macOS (the #1 trap)](#1-defaults-write-fails-silently-on-modern-macos-the-1-trap)
 - [2. `brew bundle` fails on manually installed apps](#2-brew-bundle-fails-on-manually-installed-apps)
@@ -52,7 +52,13 @@ countermeasures; this file explains *why* they look the way they do.
 - [44. The owner's environment is not in the standard — sync it, don't re-type it](#44-the-owners-environment-is-not-in-the-standard--sync-it-dont-re-type-it)
 - [45. Remote snippets run in the target's login shell — zsh does not word-split `$var`](#45-remote-snippets-run-in-the-targets-login-shell--zsh-does-not-word-split-var)
 - [46. Replacing a SQLite database file: remove its -wal/-shm and wait for the app to exit](#46-replacing-a-sqlite-database-file-remove-its--wal-shm-and-wait-for-the-app-to-exit)
-- [47. Switching the Claude provider restarts nothing that is already running](#47-switching-the-claude-provider-restarts-nothing-that-is-already-running)
+- [47. Switching the Claude provider: what follows by itself and what needs a restart](#47-switching-the-claude-provider-what-follows-by-itself-and-what-needs-a-restart)
+- [48. A removal loop fed on stdin stops after the first command that reads stdin](#48-a-removal-loop-fed-on-stdin-stops-after-the-first-command-that-reads-stdin)
+- [49. App Store apps are root-owned — `rm -rf` as the user fails](#49-app-store-apps-are-root-owned--rm--rf-as-the-user-fails)
+- [50. A freshly installed cask CLI hangs before `main` — syspolicyd is wedged](#50-a-freshly-installed-cask-cli-hangs-before-main--syspolicyd-is-wedged)
+- [51. `~/.zshenv` order: Homebrew's PATH before anything that calls a brew tool](#51-zshenv-order-homebrews-path-before-anything-that-calls-a-brew-tool)
+- [52. Key-only SSH needs proof of key login — some Macs don't log it](#52-key-only-ssh-needs-proof-of-key-login--some-macs-dont-log-it)
+- [53. A person's own Chrome with remote debugging on holds the agent port](#53-a-persons-own-chrome-with-remote-debugging-on-holds-the-agent-port)
 
 </details>
 
@@ -572,9 +578,53 @@ An app that flushes on quit, or a leftover `*.db-wal`, can replay old state into
 **Countermeasure**: quit the app and poll until its process is gone, `rm -f x.db-wal x.db-shm`,
 then `mv` the new file in; read the result back.
 
-## 47. Switching the Claude provider restarts nothing that is already running
+## 47. Switching the Claude provider: what follows by itself and what needs a restart
 
-`~/.claude/settings.json` `env` is read when a session starts: open sessions — including any
-resident, long-running session — keep the old provider (and its quota). **Countermeasure**:
-after a switch, restart or close the open sessions (and any resident one).
-API-token providers also disable claude.ai connectors (and computer use) for those sessions.
+`scripts/claude-channel.sh <target> <provider>` switches a Mac's channel without the GUI
+(quits CC Switch, merges the provider's `env` into `~/.claude/settings.json`, sets the DB's current
+provider, reopens the app, reads it back). With cc-moss 0.3.1+ Moss keeps its own copy of the
+provider and follows within a second; running sessions take a new address/token on their next
+message. **A switch they cannot take in** — back to "Claude Official", or a provider that sets
+`ANTHROPIC_MODEL` — needs `cc-moss restart --stale`. API-token providers disable claude.ai
+connectors (and computer use) for those sessions.
+
+## 48. A removal loop fed on stdin stops after the first command that reads stdin
+
+`grep … | while read …; do brew uninstall …; done` removed 19 of 41 items: one cask's uninstall
+hook read stdin and swallowed the rest of the list, and the loop ended "successfully".
+**Countermeasure**: the list comes on fd 3 (`while read … <&3; do …; done 3< <(…)`) and every
+command in the body gets `</dev/null`; `tests/test_cleanup.sh` guards both.
+
+## 49. App Store apps are root-owned — `rm -rf` as the user fails
+
+**Countermeasure**: `cleanup.sh` falls back to `sudo -n rm -rf` and confirms the bundle is gone.
+
+## 50. A freshly installed cask CLI hangs before `main` — syspolicyd is wedged
+
+The 1password-cli cask's postflight (`op completion bash`) hung for hours; even `op --version`
+never returned and `sample` showed it parked at `_dyld_start`. Other new binaries ran fine,
+and clearing the quarantine xattr did not help. The Gatekeeper assessment never finished.
+**Countermeasure**: `sudo killall syspolicyd` (launchd restarts it); the binary then runs and
+brew continues. Diagnose with `sample <pid>`: a process at `_dyld_start` is waiting on the system.
+
+## 51. `~/.zshenv` order: Homebrew's PATH before anything that calls a brew tool
+
+One `~/.zshenv` block ran `command -v fnm && eval "$(fnm env)"` before the block that put
+`/opt/homebrew/bin` on PATH, so `ssh host cmd` saw no node/npx (an interactive shell hid it).
+**Countermeasure**: the block that adds Homebrew's PATH comes first; anything that calls a brew tool
+comes after it.
+
+## 52. Key-only SSH needs proof of key login — some Macs don't log it
+
+`session_used_pubkey` looks for sshd's "Accepted publickey … port N"; on some Macs the unified log
+has no such line, so the apply refuses (correctly: no proof, no lock). **Countermeasure**: prove it
+from the orchestrator — `ssh -o PreferredAuthentications=publickey -o PasswordAuthentication=no
+-o BatchMode=yes <host> true` — then apply with `AR_PUBKEY_VERIFIED=1`, and check a password login
+is now refused.
+
+## 53. A person's own Chrome with remote debugging on holds the agent port
+
+Chrome's "allow remote debugging" (`chrome://inspect/#remote-debugging`) makes a person's
+everyday Chrome listen on 9222. An agent's browser setup then refuses, and changing the workspace's
+port only moves the clash onto another workspace's. **Countermeasure**: untick it (or quit that
+Chrome); ports stay fixed per workspace on every Mac.
