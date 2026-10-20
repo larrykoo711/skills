@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # pipeline.sh — Step 3: the setup pipeline (idempotent — safe to re-run any time).
 # Order: Homebrew → adopt pass → brew bundle (pinned) → pnpm globals → uv tools
-#        → Claude Code → defaults/shortcuts/security baseline → [agent-ready] → stage offline installers → verify
-# Usage: pipeline.sh [--exclude-file <file>] [--skip-defaults] [--skip-bundle] [--profile agent-node]
+#        → Claude Code → [cc-moss] → defaults/shortcuts/security baseline → [agent-ready] → stage offline installers → verify
+# Usage: pipeline.sh [--exclude-file <file>] [--skip-defaults] [--skip-bundle] [--profile agent-node] [--with cc-moss]
 #        pipeline.sh --prereqs-only   Xcode CLT + Homebrew only — a blank Mac needs these before
 #                                     compare.sh can even render (same on every Mac; no order sheet needed)
+#   --with cc-moss: opt-in extra — recoverable Claude Code sessions (github.com/larrykoo711/cc-moss):
+#   brew install from its tap, then `cc-moss install --yes` (hooks, tmux, starship, shell blocks,
+#   menubar app). MACOS_SETUP_CCMOSS_SKIP="tmux starship" passes --skip for parts this Mac's
+#   standard already owns. An exclude-file line "cc-moss" skips it.
 #   --profile agent-node: also converge the Agent Device Ready layer (standard/agent-ready.tsv).
 #   The profile is remembered in ~/.config/macos-setup/profile, so later verify runs include it.
 #   --exclude-file: user rejections from the playground order sheet, one token per
@@ -17,7 +21,7 @@ SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=lib/idempotent.sh
 . "$SCRIPT_DIR/lib/idempotent.sh"
 
-EXCLUDE="" SKIP_DEFAULTS=0 SKIP_BUNDLE=0 MAS_MISSING=0 PROFILE="" PREREQS_ONLY=0
+EXCLUDE="" SKIP_DEFAULTS=0 SKIP_BUNDLE=0 MAS_MISSING=0 PROFILE="" PREREQS_ONLY=0 WITH=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --exclude-file) EXCLUDE="$2"; shift 2 ;;
@@ -25,11 +29,16 @@ while [ $# -gt 0 ]; do
     --skip-bundle) SKIP_BUNDLE=1; shift ;;
     --profile) PROFILE="$2"; shift 2 ;;
     --prereqs-only) PREREQS_ONLY=1; shift ;;
+    --with) WITH="$WITH,$2"; shift 2 ;;
     *) fail "unknown argument: $1"; exit 1 ;;
   esac
 done
 
 case "$PROFILE" in ''|agent-node) ;; *) fail "unknown profile: $PROFILE (known: agent-node)"; exit 1 ;; esac
+for x in $(printf '%s' "$WITH" | tr ',' ' '); do
+  case "$x" in cc-moss) ;; *) fail "unknown extra: $x (known: cc-moss)"; exit 1 ;; esac
+done
+with() { case ",$WITH," in *",$1,"*) return 0 ;; esac; return 1; }
 if [ -n "$PROFILE" ]; then
   mkdir -p "$(dirname "$PROFILE_FILE")" && printf '%s\n' "$PROFILE" > "$PROFILE_FILE"
 else
@@ -191,6 +200,22 @@ if have claude; then report_ok "Claude Code present ($(claude --version 2>/dev/n
   msg "── installing Claude Code ──"
   curl -fsSL https://claude.ai/install.sh | bash >/dev/null 2>&1 \
     && report_ok "Claude Code installed" || report_finding "Claude Code install failed (network?)"
+fi
+
+# ── 5b. cc-moss (opt-in: --with cc-moss) — Claude Code sessions that survive crashes and reboots ──
+if with cc-moss && ! excluded cc-moss; then
+  if have cc-moss; then report_ok "cc-moss present ($(cc-moss --version 2>/dev/null))"; else
+    msg "── installing cc-moss ──"
+    brew install larrykoo711/tap/cc-moss </dev/null >/dev/null 2>&1 \
+      && report_ok "cc-moss installed" || report_finding "cc-moss install failed (brew install larrykoo711/tap/cc-moss)"
+  fi
+  if have cc-moss; then
+    skip=""; for p in ${MACOS_SETUP_CCMOSS_SKIP:-}; do skip="$skip --skip $p"; done
+    # shellcheck disable=SC2086  # $skip is a list of flags
+    cc-moss install --yes $skip </dev/null >/dev/null 2>&1 \
+      && report_ok "cc-moss set up (hooks, terminal, menubar app)" \
+      || report_finding "cc-moss install --yes failed — run it by hand to see why"
+  fi
 fi
 
 # ── 6. defaults / shortcuts / security baseline (every write read back) ──

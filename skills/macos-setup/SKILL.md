@@ -1,6 +1,6 @@
 ---
 name: macos-setup
-version: 0.2.0
+version: 0.3.0
 description: One-stop, standard-driven macOS machine setup — Homebrew formulas and casks, App Store apps, Node/Python globals, system defaults, keyboard shortcuts, security and power baseline. Use when setting up a new Mac from scratch, onboarding a fresh macOS machine, converging an existing Mac to the standard, auditing drift from it, making a Mac Agent Device Ready (always-on, headless, agent-driven node), or updating the standard itself (macos setup, 装机, 新 Mac 配置, 一键装机, 对标标准, 收敛漂移, agent-ready, agent node, 无人值守 Mac). Not for one-off package installs, macOS version upgrades, or MDM-managed fleets — those have their own tooling.
 ---
 
@@ -150,8 +150,23 @@ bash scripts/pipeline.sh --exclude-file /tmp/macos-setup-exclude.txt
 
 Pipeline order: Homebrew → **adopt pass** (lossless takeover of manually installed
 apps) → `brew bundle` (`NO_UPGRADE=1`) → pnpm globals → uv tools → Claude Code →
-defaults / shortcuts / security / power baseline (**write + read-back**) → stage
+[cc-moss, opt-in] → defaults / shortcuts / security / power baseline (**write + read-back**) → stage
 offline installers to the Desktop (bilingual guide; the human installs them) → `verify.sh`.
+
+**Optional: cc-moss** — [cc-moss](https://github.com/larrykoo711/cc-moss) keeps Claude Code
+sessions recoverable across crashes and reboots (tmux, hooks, a menubar app). Ask the user
+during Step 2; never install it unasked. When they want it, add `--with cc-moss`:
+
+```bash
+bash scripts/pipeline.sh --exclude-file /tmp/macos-setup-exclude.txt --with cc-moss
+# parts this Mac's standard already owns stay untouched:
+MACOS_SETUP_CCMOSS_SKIP="tmux starship" bash scripts/pipeline.sh --with cc-moss
+```
+
+It installs from the Homebrew tap, then runs `cc-moss install --yes` (hooks, tmux, starship,
+shell blocks, menubar app; `MACOS_SETUP_CCMOSS_SKIP` passes `--skip` for each part named).
+`verify.sh` runs `cc-moss doctor` wherever cc-moss is installed. Recommended for an agent node,
+where dispatched sessions should come back after a reboot.
 
 `cleanup.sh` is still gated on explicit approval — it removes nothing the order sheet
 didn't approve, and skips everything in the exclude file.
