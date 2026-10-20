@@ -1,0 +1,32 @@
+# agent-ready.tsv — the Agent Device Ready standard (profile: agent-node).
+# One source for check, apply and report: scripts/agent-ready.sh reads this file,
+# tests/test_agent_ready.sh guards that every id has its functions.
+# A machine is agent-ready when an agent can reach it, run long work on it, and
+# trust what it reports — with nobody sitting in front of it.
+#
+# Format: id TAB layer TAB mode TAB description-en TAB description-zh
+#   layer: reach | always-on | toolchain
+#   mode:  auto   — agent-ready.sh --apply fixes it (and reads it back)
+#          manual — needs a human once (GUI login, browser sign-in); --check tells you
+#          check  — owned by another tool (shell config / pipeline); only verified here
+ssh-remote-login	reach	auto	Remote Login (sshd) enabled	远程登录（sshd）已开启
+ssh-authorized-key	reach	check	~/.ssh/authorized_keys present with 700/600 permissions	~/.ssh/authorized_keys 存在且权限 700/600
+ssh-key-only	reach	auto	sshd refuses password and keyboard-interactive logins	sshd 拒绝密码与键盘交互登录
+sudo-nopasswd	reach	auto	sudo works without a password (validated sudoers.d drop-in)	sudo 免密（sudoers.d 文件经 visudo 校验）
+remote-fda	reach	manual	Remote users have Full Disk Access (sshd-keygen-wrapper)	远程用户拥有完全磁盘访问权限
+noninteractive-path	reach	check	`ssh host cmd` sees brew, git, tmux, claude, node and npx (non-interactive PATH)	非交互 SSH 能找到 brew / git / tmux / claude / node / npx
+tailscale-up	reach	manual	Tailscale signed in and running	Tailscale 已登录并运行
+tailscale-at-login	reach	auto	Tailscale starts at every login (LaunchAgent, independent of the app's own toggle)	每次登录自动启动 Tailscale（LaunchAgent，不依赖应用自带开关）
+power-never-sleep	always-on	auto	System and disks never sleep (display may)	系统与磁盘永不睡眠（显示器可以）
+power-autorestart	always-on	auto	Boots by itself after a power failure	断电恢复后自动开机
+power-womp	always-on	auto	Wakes for network access	网络唤醒已开启
+updates-no-surprise-reboot	always-on	auto	macOS major/minor updates are not auto-installed (security responses still are)	macOS 系统更新不自动安装（安全响应仍自动）
+filevault-unattended	always-on	check	Reboot is recoverable remotely (FileVault off, or SSH pre-boot unlock available)	重启后可远程恢复（FileVault 关闭，或支持 SSH 预启动解锁）
+gui-session	always-on	manual	The agent user is logged in at the console (keychain is reachable)	agent 用户已在本机图形界面登录（钥匙串可用）
+tmux-gui-server	always-on	auto	A tmux server lives in the GUI session, so dispatched sessions can use the keychain	tmux server 运行在图形会话内，下发的会话可访问钥匙串
+op-service-account	toolchain	manual	1Password Service Account token usable by `op` (token file 600; set AGENT_OP_TOKEN_FILE)	1Password Service Account 令牌可被 `op` 使用（令牌文件 600；路径见 AGENT_OP_TOKEN_FILE）
+claude-auth	toolchain	manual	Claude Code is signed in	Claude Code 已登录
+gh-auth	toolchain	manual	GitHub CLI is signed in	GitHub CLI 已登录
+git-identity	toolchain	manual	Global git user.name and user.email are set	git 全局 user.name / user.email 已设置
+docker-ready	toolchain	manual	Docker engine answers (OrbStack started once)	Docker 引擎可用（OrbStack 已首次启动）
+orbstack-agent-config	toolchain	auto	OrbStack starts at login, k8s off (subnet pinned when AGENT_ORBSTACK_SUBNET4 is set)	OrbStack 登录自启、k8s 关闭（设置 AGENT_ORBSTACK_SUBNET4 时固定网段）

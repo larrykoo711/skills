@@ -34,10 +34,50 @@ cfg_excluded() {
     && grep -qxF "$1" "$MACOS_SETUP_EXCLUDE"
 }
 
+# Dock apps (standard/dock-apps.txt) — shared by d03 (write) and verify (read-only).
+# Compared by app name (fully URL-decoded): Safari reads back from its Cryptex path, labels are
+# localized. The target order = the standard's apps that are installed, in standard order, then
+# every other app already pinned, in its current order — converging never unpins anything
+# (removals are never automatic).
+dock_current() {
+  dockutil --list 2>/dev/null | awk -F'\t' '$2 ~ /\.app\/?$/ {print $2}' \
+    | /usr/bin/python3 -c 'import sys,urllib.parse,os
+for l in sys.stdin: print(os.path.basename(urllib.parse.unquote(l.strip()).rstrip("/"))[:-4])'
+}
+dock_standard_present() {
+  grep -vE '^\s*(#|$)' "$(dirname "${BASH_SOURCE[0]}")/../../standard/dock-apps.txt" \
+    | while IFS= read -r app; do [ -d "$app" ] && basename "$app" .app; done
+}
+dock_expected() {
+  local std; std="$(dock_standard_present)"
+  printf '%s\n' "$std"
+  dock_current | while IFS= read -r a; do printf '%s\n' "$std" | grep -qxF "$a" || printf '%s\n' "$a"; done
+}
+
+# Machine profile (set once by `pipeline.sh --profile <name>`, read by every later run).
+PROFILE_FILE="$HOME/.config/macos-setup/profile"
+current_profile() { [ -f "$PROFILE_FILE" ] && head -1 "$PROFILE_FILE" || true; }
+
+# Xcode Command Line Tools without the GUI dialog: the in-progress marker makes
+# softwareupdate list CLT, then install it by label. Needs (passwordless) sudo.
+ensure_clt() {
+  xcode-select -p >/dev/null 2>&1 && { ok "Xcode CLT present"; return 0; }
+  sudo -n true 2>/dev/null || { report_finding "Xcode CLT missing and no passwordless sudo — install it from the dialog (xcode-select --install)"; return 1; }
+  msg "Installing Xcode Command Line Tools (headless)…"
+  local marker=/tmp/.com.apple.dt.CommandLineTools.installondemand.in-progress label
+  touch "$marker"
+  label="$(softwareupdate -l 2>/dev/null | sed -n 's/^\* Label: \(Command Line Tools.*\)$/\1/p' | sort -V | tail -1)"
+  [ -n "$label" ] && sudo softwareupdate -i "$label" --verbose >/dev/null 2>&1
+  rm -f "$marker"
+  xcode-select -p >/dev/null 2>&1 && report_ok "Xcode CLT installed (${label})" \
+    || { report_finding "Xcode CLT headless install failed (label: ${label:-not found}) — xcode-select --install"; return 1; }
+}
+
 ensure_brew() {
   if have brew; then ok "Homebrew present ($(brew --version | head -1))"; return 0; fi
   msg "Installing Homebrew…"
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
+  # NONINTERACTIVE: no "press RETURN" prompt; sudo must already work (agent-bootstrap).
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
     report_finding "Homebrew install failed"; return 1; }
   # Apple Silicon and Intel prefixes
   eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
@@ -163,8 +203,8 @@ msg_i18n() {
   case "$key" in
     brew_failed)   en="Homebrew install failed. Check the network or install it by hand."
                    zh="Homebrew 安装失败，请检查网络或手动安装。" ;;
-    appstore_signin) en="The App Store is not signed in. Sign in, then tell me to re-run."
-                     zh="App Store 未登录，请登录后让我重新运行流水线。" ;;
+    appstore_signin) en="App Store apps failed to install. Check the App Store is signed in, then tell me to re-run."
+                     zh="App Store 应用没装上，请确认 App Store 已登录，再让我重新运行流水线。" ;;
     report_gated)  en="The comparison report is open on your Desktop. {} prerequisite(s) need your help first — tell me when they are done."
                    zh="对比报告已在桌面打开，有 {} 项前置条件需要你先处理，完成后告诉我。" ;;
     report_ready)  en="The device-versus-standard report is open on your Desktop. Review each pending item, then click Copy for Claude Code."

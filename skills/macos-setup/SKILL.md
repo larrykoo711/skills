@@ -1,6 +1,7 @@
 ---
 name: macos-setup
-description: One-stop, standard-driven macOS machine setup — Homebrew formulas and casks, App Store apps, Node/Python globals, system defaults, keyboard shortcuts, security and power baseline. Use when setting up a new Mac from scratch, onboarding a fresh macOS machine, converging an existing Mac to the standard, auditing drift from it, or updating the standard itself (macos setup, 装机, 新 Mac 配置, 一键装机, 对标标准, 收敛漂移). Not for one-off package installs, macOS version upgrades, or MDM-managed fleets — those have their own tooling.
+version: 0.2.0
+description: One-stop, standard-driven macOS machine setup — Homebrew formulas and casks, App Store apps, Node/Python globals, system defaults, keyboard shortcuts, security and power baseline. Use when setting up a new Mac from scratch, onboarding a fresh macOS machine, converging an existing Mac to the standard, auditing drift from it, making a Mac Agent Device Ready (always-on, headless, agent-driven node), or updating the standard itself (macos setup, 装机, 新 Mac 配置, 一键装机, 对标标准, 收敛漂移, agent-ready, agent node, 无人值守 Mac). Not for one-off package installs, macOS version upgrades, or MDM-managed fleets — those have their own tooling.
 ---
 
 # macOS Setup
@@ -40,6 +41,50 @@ bash scripts/compare.sh     # Step 2 — decision report → Desktop + browser +
 # … user annotates the report, clicks "Copy for Claude Code", pastes it back …
 bash scripts/pipeline.sh --exclude-file /tmp/macos-setup-exclude.txt   # Step 3
 ```
+
+## A blank Mac, driven from another Mac (the field-tested order)
+
+```bash
+bash scripts/agent-bootstrap.sh --pubkey ~/.ssh/<key>.pub --remote user@<ip> [--jump <router>]
+bash scripts/remote.sh <host> <target> precheck
+bash scripts/remote.sh <host> <target> pipeline --prereqs-only   # CLT + Homebrew: compare needs them
+bash scripts/remote.sh <host> <target> compare                    # open the synced HTML locally
+bash scripts/remote.sh <host> <target> pipeline [--profile agent-node] --exclude-file <file>
+```
+
+Then, from the owner's main Mac, carry over what the standard does not (Claude settings, agents,
+plugins, user MCP servers, personal `.zshrc`, CC Switch providers — per-machine choices kept):
+
+```bash
+bash scripts/sync-user-env.sh <target> [--dry-run] [--only claude,claude-md,zshrc,cc-switch]
+bash scripts/claude-channel.sh <target> --list | "<provider name>"   # switch its CC Switch provider headless
+```
+
+Opt-outs are env vars (`SYNC_SKIP_COMMANDS`, `SYNC_SKIP_MCP`, `SYNC_ZSHRC_MANAGED_TAG`) —
+see the script header.
+
+`remote.sh` runs every step detached under `caffeinate -i` (a fresh Mac idle-sleeps after
+~1 min) and treats "can't reach the target" as *still running*, never as done. GUI casks
+whose postflight needs the console (OrbStack) belong in the GUI-session tmux — pitfalls #39.
+
+## Agent-node profile (Agent Device Ready)
+
+For a Mac that agents drive with nobody in front of it (always-on build/agent box),
+add `--profile agent-node` to the pipeline. It converges `standard/agent-ready.tsv`
+on top of the normal standard: key-only SSH, NOPASSWD sudo, non-interactive PATH,
+Tailscale, never-sleep + auto-restart, no surprise OS-update reboots, FileVault kept
+on (SSH pre-boot unlock), a tmux server inside the GUI session so dispatched agents can
+use the keychain, and signed-in claude / gh / git / docker. The profile is remembered
+(`~/.config/macos-setup/profile`), so later `verify.sh` runs include the layer.
+
+```bash
+bash scripts/agent-bootstrap.sh --pubkey ~/.ssh/<key>.pub   # Day-0: paste the output on the new Mac
+bash scripts/remote.sh <host> <ssh-target> pipeline --profile agent-node
+bash scripts/remote.sh <host> <ssh-target> agent-ready --check   # pass · fail · manual · unknown
+```
+
+Verdicts are four-way and `unknown` is never a pass. Lifecycle, rationale and the
+FileVault / keychain decisions: [references/agent-ready.md](references/agent-ready.md).
 
 ## Step 1 — Precheck
 
@@ -175,6 +220,8 @@ bash scripts/sync-history.sh <host> <ssh-target>   # e.g. my-mac my-mac.local
 | `standard/hotkeys.tsv` | keyboard shortcut baseline — one source for write, verify, report |
 | `standard/offline-apps.tsv` | offline installers (bring-your-own / no-cask apps) — staged to Desktop + bilingual guide |
 | `scripts/defaults/d*.sh` | system settings / security / power baseline |
+| `standard/dock-apps.txt` | Dock pinned apps, left to right (apps not installed are skipped) |
+| `standard/agent-ready.tsv` | Agent Device Ready layer (profile `agent-node` only) |
 
 Changing the standard = editing these files. A per-machine opt-out is an order-sheet
 rejection — it never edits the standard.
@@ -193,8 +240,11 @@ rejection — it never edits the standard.
 ## Local vs remote target
 
 - **Local**: run the scripts directly; `.history/` lands in the repo automatically.
-- **Remote (SSH)**: `rsync -a <skill-dir>/ <host>:/tmp/macos-setup/`, then execute
-  over SSH **inside a persistent tmux session** (survives disconnects). Voice plays
+- **Remote (SSH)**: `scripts/remote.sh <host> <ssh-target> <step> [args]` does the whole
+  dance — rsync the skill to `/tmp/macos-setup/`, run the step **inside a persistent tmux
+  session** (survives disconnects), wait, print the real exit code, pull the run record
+  back. `remote.sh <host> <target> --status` peeks at a running step. Manual equivalent:
+  `rsync -a <skill-dir>/ <host>:/tmp/macos-setup/`, then execute over SSH in tmux. Voice plays
   on the target — that is where the human is. Interactive confirms need a tty: `ssh -t`.
   The run record builds on the target; pull it back with `scripts/sync-history.sh
   <host> <ssh-target>` after each phase so the orchestrator keeps the reviewable copy.
@@ -222,6 +272,8 @@ rejection — it never edits the standard.
 | Removing app data during cleanup | Data stays by default — removal removes the program |
 | Sneaking removals into the pipeline | Removals only via cleanup / order sheet, confirmed each |
 | Treating an already-compliant machine as special | Every Mac walks the same three steps |
+| Reading an SSH-side "not signed in" as fact | Keychain tools look signed-out over SSH — probe inside the GUI tmux server, else `unknown` |
+| Turning on key-only SSH before the key works | `agent-ready` refuses; never hand-edit sshd before `ssh-authorized-key` passes |
 
 ## Rationalization check — before executing, ask
 
@@ -234,9 +286,11 @@ rejection — it never edits the standard.
 
 ## References
 
-- [references/pitfalls.md](references/pitfalls.md) — ten field-tested traps and their countermeasures
+- [references/agent-ready.md](references/agent-ready.md) — the agent-node profile: lifecycle, layers, verdicts
+- [references/pitfalls.md](references/pitfalls.md) — field-tested traps and their countermeasures
 - [references/keybindings-standard.md](references/keybindings-standard.md) — shortcut rationale + safe read/write methods
 - [templates/setup-report.md](templates/setup-report.md) — convergence checklist skeleton
+- [CHANGELOG.md](CHANGELOG.md) — version history (currently v0.2.0)
 
 ---
 

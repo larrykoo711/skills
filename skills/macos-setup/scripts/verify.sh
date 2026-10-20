@@ -49,6 +49,12 @@ if ! cfg_excluded "power:ac-sleep"; then
     || report_finding "pmset AC sleep expected 0, got ${ac_sleep:-unknown}"
 fi
 
+# ── Dock pinned apps + order ──
+if ! cfg_excluded "dock:apps" && have dockutil; then
+  [ "$(dock_current)" = "$(dock_expected)" ] && report_ok "Dock apps match standard/dock-apps.txt" \
+    || report_finding "Dock apps differ from standard/dock-apps.txt (got: $(dock_current | paste -sd, -))"
+fi
+
 # ── keyboard shortcuts: the whole baseline in one pass ──
 verify_hotkeys_tsv "$SKILL_DIR/standard/hotkeys.tsv"
 
@@ -63,5 +69,8 @@ fi
 if ! cfg_excluded "security:filevault"; then
   fdesetup status 2>/dev/null | grep -q On && report_ok "FileVault on" || report_finding "FileVault off"
 fi
+
+# ── Agent Device Ready layer (only on machines set up with --profile agent-node) ──
+[ "$(current_profile)" = agent-node ] && bash "$SCRIPT_DIR/agent-ready.sh" --check
 
 msg "════ verify done — findings → $FINDINGS_FILE ════"

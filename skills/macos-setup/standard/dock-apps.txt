@@ -1,0 +1,21 @@
+# dock-apps.txt — the Dock's pinned apps, left to right (the standard; d03 applies it).
+# One .app path per line. Apps not installed on a machine are skipped, so one list
+# serves every Mac — the order of what IS installed always matches.
+# This list is an example layout — edit it to your own.
+# Per-machine opt-out: exclude token `dock:apps` (leaves the Dock untouched).
+/System/Applications/System Settings.app
+/System/Applications/Apps.app
+/Applications/Notion.app
+/System/Applications/Freeform.app
+/Applications/OrbStack.app
+/Applications/Ghostty.app
+/Applications/Safari.app
+/Applications/Visual Studio Code.app
+/Applications/Google Chrome.app
+/Applications/Sourcetree.app
+/Applications/Slack.app
+/Applications/LarkSuite.app
+/Applications/WeChat.app
+/Applications/WhatsApp.app
+/Applications/Telegram.app
+/System/Applications/iPhone Mirroring.app

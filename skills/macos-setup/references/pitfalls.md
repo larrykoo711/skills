@@ -4,7 +4,7 @@ Every entry below was hit in real setup runs. The scripts already encode the
 countermeasures; this file explains *why* they look the way they do.
 
 <details>
-<summary><strong>Contents</strong> — 30 pitfalls (click to expand)</summary>
+<summary><strong>Contents</strong> — 47 pitfalls (click to expand)</summary>
 
 - [1. `defaults write` fails SILENTLY on modern macOS (the #1 trap)](#1-defaults-write-fails-silently-on-modern-macos-the-1-trap)
 - [2. `brew bundle` fails on manually installed apps](#2-brew-bundle-fails-on-manually-installed-apps)
@@ -14,28 +14,45 @@ countermeasures; this file explains *why* they look the way they do.
 - [6. symbolichotkeys: never edit the plist, never read it by eye](#6-symbolichotkeys-never-edit-the-plist-never-read-it-by-eye)
 - [7. `HOMEBREW_BUNDLE_NO_UPGRADE=1` is mandatory](#7-homebrew_bundle_no_upgrade1-is-mandatory)
 - [8. Cleanup is a high-risk, standalone action](#8-cleanup-is-a-high-risk-standalone-action)
-- [9. Plan first — zero machine changes before the order sheet is approved](#9-plan-first-zero-machine-changes-before-the-order-sheet-is-approved)
+- [9. Plan first — zero machine changes before the order sheet is approved](#9-plan-first--zero-machine-changes-before-the-order-sheet-is-approved)
 - [10. mas 7.x removed the `account` subcommand](#10-mas-7x-removed-the-account-subcommand)
-- [11. `say` "succeeds" silently — the assist channel can fail exactly when needed](#11-say-succeeds-silently-the-assist-channel-can-fail-exactly-when-needed)
-- [12. Offline-app packages are `.iso` / `.tbz2`, and are never auto-installed](#12-offline-app-packages-are-iso-tbz2-and-are-never-auto-installed)
+- [11. `say` "succeeds" silently — the assist channel can fail exactly when needed](#11-say-succeeds-silently--the-assist-channel-can-fail-exactly-when-needed)
+- [12. Offline-app packages are `.iso` / `.tbz2`, and are never auto-installed](#12-offline-app-packages-are-iso--tbz2-and-are-never-auto-installed)
 - [13. Slow remote transfer? It's the link, not the protocol](#13-slow-remote-transfer-its-the-link-not-the-protocol)
-- [14. Remote `open` / `say` hit the GUI-session boundary — generate guides locally](#14-remote-open-say-hit-the-gui-session-boundary-generate-guides-locally)
+- [14. Remote `open` / `say` hit the GUI-session boundary — generate guides locally](#14-remote-open--say-hit-the-gui-session-boundary--generate-guides-locally)
 - [15. A blocklisted tap-pathed package appeared in TWO report sections at once](#15-a-blocklisted-tap-pathed-package-appeared-in-two-report-sections-at-once)
 - [16. `pgrep -fi <app>` to test "is it running" reports system services, not the app](#16-pgrep--fi-app-to-test-is-it-running-reports-system-services-not-the-app)
-- [17. Stubborn apps (ToDesk) survive `rm -rf` — watchdog + launchd + root-owned files](#17-stubborn-apps-todesk-survive-rm--rf-watchdog-launchd-root-owned-files)
-- [18. A re-run report dropped finished removals — progress looked like it never happened](#18-a-re-run-report-dropped-finished-removals-progress-looked-like-it-never-happened)
-- [19. `brew leaves` hid installed standard tools — they read as "missing" forever](#19-brew-leaves-hid-installed-standard-tools-they-read-as-missing-forever)
-- [20. Homebrew now gates untrusted third-party taps — opt the standard's taps through](#20-homebrew-now-gates-untrusted-third-party-taps-opt-the-standards-taps-through)
+- [17. Stubborn apps (ToDesk) survive `rm -rf` — watchdog + launchd + root-owned files](#17-stubborn-apps-todesk-survive-rm--rf--watchdog--launchd--root-owned-files)
+- [18. A re-run report dropped finished removals — progress looked like it never happened](#18-a-re-run-report-dropped-finished-removals--progress-looked-like-it-never-happened)
+- [19. `brew leaves` hid installed standard tools — they read as "missing" forever](#19-brew-leaves-hid-installed-standard-tools--they-read-as-missing-forever)
+- [20. Homebrew now gates untrusted third-party taps — opt the standard's taps through](#20-homebrew-now-gates-untrusted-third-party-taps--opt-the-standards-taps-through)
 - [21. A `.pkg`-based cask (tailscale-app) hangs a headless install forever on sudo](#21-a-pkg-based-cask-tailscale-app-hangs-a-headless-install-forever-on-sudo)
-- [22. Cask renamed to `-app` suffix read as missing (tailscale → tailscale-app)](#22-cask-renamed-to--app-suffix-read-as-missing-tailscale-tailscale-app)
-- [23. mas: stale iWork ids + a localized-name match that never matched](#23-mas-stale-iwork-ids-a-localized-name-match-that-never-matched)
+- [22. Cask renamed to `-app` suffix read as missing (tailscale → tailscale-app)](#22-cask-renamed-to--app-suffix-read-as-missing-tailscale--tailscale-app)
+- [23. mas: stale iWork ids + a localized-name match that never matched](#23-mas-stale-iwork-ids--a-localized-name-match-that-never-matched)
 - [24. pnpm globals: bin dir not in PATH, and `ls -g` tree broke collection](#24-pnpm-globals-bin-dir-not-in-path-and-ls--g-tree-broke-collection)
-- [25. `pnpm ls -g` is the wrong source of truth — read the shim dir instead](#25-pnpm-ls--g-is-the-wrong-source-of-truth-read-the-shim-dir-instead)
+- [25. `pnpm ls -g` is the wrong source of truth — read the shim dir instead](#25-pnpm-ls--g-is-the-wrong-source-of-truth--read-the-shim-dir-instead)
 - [26. SUDO_ASKPASS via inline-printf got the password WRONG (escaping hell)](#26-sudo_askpass-via-inline-printf-got-the-password-wrong-escaping-hell)
-- [27. Same app in blocklist AND offline-apps → freshly-installed version re-flagged for removal](#27-same-app-in-blocklist-and-offline-apps-freshly-installed-version-re-flagged-for-removal)
+- [27. Same app in blocklist AND offline-apps → freshly-installed version re-flagged for removal](#27-same-app-in-blocklist-and-offline-apps--freshly-installed-version-re-flagged-for-removal)
 - [28. sync-history --delete erased a report generated only on the orchestrator](#28-sync-history---delete-erased-a-report-generated-only-on-the-orchestrator)
-- [29. The Ship Report is for the Mac's owner, not the engineer — no jargon](#29-the-ship-report-is-for-the-macs-owner-not-the-engineer-no-jargon)
-- [30. Detection logic must stay in lockstep ACROSS scripts — fix collect, fix cleanup too](#30-detection-logic-must-stay-in-lockstep-across-scripts-fix-collect-fix-cleanup-too)
+- [29. The Ship Report is for the Mac's owner, not the engineer — no jargon](#29-the-ship-report-is-for-the-macs-owner-not-the-engineer--no-jargon)
+- [30. Detection logic must stay in lockstep ACROSS scripts — fix collect, fix cleanup too](#30-detection-logic-must-stay-in-lockstep-across-scripts--fix-collect-fix-cleanup-too)
+- [31. One tap-qualified formula without its `tap` line aborts the WHOLE bundle](#31-one-tap-qualified-formula-without-its-tap-line-aborts-the-whole-bundle)
+- [32. pnpm 12 refuses `add -g` off-PATH, and `pnpm setup` leaves a broken self-shim](#32-pnpm-12-refuses-add--g-off-path-and-pnpm-setup-leaves-a-broken-self-shim)
+- [33. Homebrew moves formulas to casks (azure-cli) — the standard goes stale silently](#33-homebrew-moves-formulas-to-casks-azure-cli--the-standard-goes-stale-silently)
+- [34. A fresh Mac falls asleep mid-install — background work is not "user activity"](#34-a-fresh-mac-falls-asleep-mid-install--background-work-is-not-user-activity)
+- [35. A blank Mac's /usr/bin/python3 is a stub — compare "succeeded" with no report](#35-a-blank-macs-usrbinpython3-is-a-stub--compare-succeeded-with-no-report)
+- [36. "Couldn't reach the target" is not "the step finished"](#36-couldnt-reach-the-target-is-not-the-step-finished)
+- [37. CLT's softwareupdate label changed shape — match the prefix, not the separator](#37-clts-softwareupdate-label-changed-shape--match-the-prefix-not-the-separator)
+- [38. Keychain-backed tools look signed out over SSH](#38-keychain-backed-tools-look-signed-out-over-ssh)
+- [39. GUI casks' postflight hangs over SSH — install them inside the GUI session](#39-gui-casks-postflight-hangs-over-ssh--install-them-inside-the-gui-session)
+- [40. brew 7 prints `bundle check --verbose` gaps on stderr](#40-brew-7-prints-bundle-check---verbose-gaps-on-stderr)
+- [41. Casks get disabled upstream (gas-mask) — remove them from the standard](#41-casks-get-disabled-upstream-gas-mask--remove-them-from-the-standard)
+- [42. "Use Chrome for Testing for automation" is advice for tests, not for agents on the web](#42-use-chrome-for-testing-for-automation-is-advice-for-tests-not-for-agents-on-the-web)
+- [43. A Mac's Wi-Fi MAC changes when "Private Wi-Fi address" flips — DHCP bindings go stale](#43-a-macs-wi-fi-mac-changes-when-private-wi-fi-address-flips--dhcp-bindings-go-stale)
+- [44. The owner's environment is not in the standard — sync it, don't re-type it](#44-the-owners-environment-is-not-in-the-standard--sync-it-dont-re-type-it)
+- [45. Remote snippets run in the target's login shell — zsh does not word-split `$var`](#45-remote-snippets-run-in-the-targets-login-shell--zsh-does-not-word-split-var)
+- [46. Replacing a SQLite database file: remove its -wal/-shm and wait for the app to exit](#46-replacing-a-sqlite-database-file-remove-its--wal-shm-and-wait-for-the-app-to-exit)
+- [47. Switching the Claude provider restarts nothing that is already running](#47-switching-the-claude-provider-restarts-nothing-that-is-already-running)
 
 </details>
 
@@ -112,8 +129,15 @@ only execute what comes back on the approved order sheet.
 
 `mas account` now fails with "Unexpected argument" (Apple removed the private API;
 mas dropped the command).
-**Countermeasure**: detect sign-in with `[ -n "$(mas list | head -1)" ]` — being able
-to list owned apps means signed in.
+~~Countermeasure: detect sign-in with `[ -n "$(mas list | head -1)" ]`.~~ **Wrong** —
+`mas list` lists App Store apps *installed on this Mac*, not sign-in. A signed-in Mac
+with no App Store apps yet (or no `mas` installed) prints nothing and was reported as
+"not signed in" (2026-10-16: the user was signed in; the real failure was an
+unrelated Brewfile entry aborting the whole bundle).
+**Countermeasure**: sign-in is not readable from the CLI. A non-empty `mas list` proves
+it; an empty one proves nothing, so precheck only notes it. The pipeline asks the
+human to check sign-in **only when `brew bundle check --verbose` still lists a missing
+`App` entry**, and every bundle failure names the actual missing entries.
 
 ## 11. `say` "succeeds" silently — the assist channel can fail exactly when needed
 
@@ -420,3 +444,137 @@ cleanup now mirrors: cask matches `<name>|<name>-app`, pnpm-g checks `$PNPM_HOME
 General rule: a detection rule duplicated across N scripts is N places to keep honest; a
 shared helper would be better, but until then, a cross-script grep is mandatory after any
 collection change.
+
+## 31. One tap-qualified formula without its `tap` line aborts the WHOLE bundle
+
+`brew "joshmedeski/sesh/sesh"` had no `tap "joshmedeski/sesh"` line. Every machine that
+had been set up before already had the tap, so it never showed. On a Mac that had never
+seen it (2026-10-16) `brew bundle` stopped at "No available formula … requires the tap" and
+**installed nothing after it** — 38 entries, pnpm included.
+**Countermeasure**: every `owner/tap/formula` line needs its `tap "owner/tap"` line; an
+entry nothing depends on any more (sesh, retired from the shell setup) leaves the standard.
+Validate on a machine that has never seen the tap, not on one already set up.
+
+## 32. pnpm 12 refuses `add -g` off-PATH, and `pnpm setup` leaves a broken self-shim
+
+pnpm 12 (global dir `~/Library/pnpm/bin`) fails every `pnpm add -g` with
+`ERR_PNPM_GLOBAL_BIN_DIR_NOT_IN_PATH`. Running `pnpm setup` fixes `.zshrc` but also drops
+`pnpm`/`pn`/`pnpx`/`pnx` shims there that `exec` a `global/v11/…/pnpm` that was never
+installed — they sit first on PATH, so every pnpm call then fails.
+**Countermeasure**: the pipeline exports `PNPM_HOME` + both bin dirs for its own run and
+never calls `pnpm setup`; your shell config (`~/.zshenv`) must put the dir on the
+non-interactive PATH, and the pipeline reports a finding when it is missing there.
+
+## 33. Homebrew moves formulas to casks (azure-cli) — the standard goes stale silently
+
+Homebrew 7 migrated `azure-cli` from homebrew/core to a cask. Machines that installed the
+formula earlier keep it, so nothing looks wrong — until a new Mac reads "No available
+formula with the name azure-cli". **Countermeasure**: when bundle warns "migrated from
+homebrew/core to homebrew/cask", change the entry to `cask` in the standard (one line).
+
+## 34. A fresh Mac falls asleep mid-install — background work is not "user activity"
+
+A new Mac mini ships with system sleep = 1 minute after the display sleeps. A long
+`brew bundle` started over SSH does not count as activity, so the target idle-sleeps
+mid-run: Wi-Fi stays associated, ARP goes unanswered, SSH reports "Host is unreachable",
+and Wi-Fi wake packets don't get through (2026-10-19). **Countermeasure**:
+`pipeline.sh` holds `caffeinate -i -w $$` for the whole run, `remote.sh` wraps every step
+in `caffeinate -i`, and an agent-node writes its pmset baseline at step 0, not step 6.
+
+## 35. A blank Mac's /usr/bin/python3 is a stub — compare "succeeded" with no report
+
+Before Xcode CLT exists, `/usr/bin/python3` pops the CLT install dialog and fails. compare.sh
+used it to render the report and still exited 0 in silent mode — a run that produced
+nothing looked like a pass. **Countermeasure**: compare refuses on a blank Mac and points
+to `pipeline.sh --prereqs-only` (CLT + Homebrew, identical on every Mac); it also fails if
+the report file is missing after rendering.
+
+## 36. "Couldn't reach the target" is not "the step finished"
+
+The first remote.sh treated any non-zero ssh exit as "the run ended", so a sleeping target
+ended the wait with `exit unknown`. **Countermeasure**: ssh exit 255 means *we could not
+ask* — keep waiting, say so once, and give up loudly after 10 minutes with a pointer to
+`--status`. Never fold "not probed" into a verdict (agent-ready's `unknown` is the same rule).
+
+## 37. CLT's softwareupdate label changed shape — match the prefix, not the separator
+
+`ensure_clt` matched `Command Line Tools for Xcode-<ver>`; macOS 27 lists
+`Command Line Tools for Xcode 27.0-27.0` (space, not hyphen) and the headless install found
+nothing (Homebrew's installer then installed CLT itself, masking it). **Countermeasure**:
+match `^\* Label: Command Line Tools.*` and take the highest with `sort -V`.
+
+## 38. Keychain-backed tools look signed out over SSH
+
+`claude`, `gh` and anything else storing tokens in the login keychain fail from an SSH
+session even when signed in at the console — the SSH process is outside the GUI security
+session. Reading that as "not signed in" sends a human to re-login for nothing; reading it
+as "fine" lets dispatched agents fail. **Countermeasure**: agent-ready starts a tmux server
+inside the GUI session (LaunchAgent `com.macos-setup.agent-tmux`) and probes keychain tools
+*inside it*; without it, an SSH-side failure is `unknown`, never `fail` or `pass`.
+
+## 39. GUI casks' postflight hangs over SSH — install them inside the GUI session
+
+`orbctl _internal brew-postflight` (OrbStack's cask postflight) needs the GUI session; started
+from SSH it waits forever and the whole `brew bundle` sat on it for 26 minutes
+(2026-10-19). **Killing it is wrong**: brew then treats the cask as failed and *rolls back*,
+deleting OrbStack.app that had already been copied. **Countermeasure**: install such casks
+inside the GUI-session tmux server (agent-ready `tmux-gui-server`):
+`tmux new-window -t agent-home "brew install --cask orbstack"` — the postflight completes
+(and any dialog appears on the target's screen, where a human can click it).
+
+## 40. brew 7 prints `bundle check --verbose` gaps on stderr
+
+The pipeline counted missing entries with `brew bundle check --verbose … 2>/dev/null | grep '^→'`
+and reported "0 missing" while orbstack and gas-mask were absent — brew 7 writes the `→` lines
+to stderr. **Countermeasure**: `2>&1` before the grep. A count of 0 next to "not satisfied"
+is a contradiction — treat it as a broken probe, never as a pass.
+
+## 41. Casks get disabled upstream (gas-mask) — remove them from the standard
+
+Homebrew disables casks that stop passing Gatekeeper (`gas-mask`, 2026-09-01). Existing
+machines keep the app, a new Mac can never satisfy the bundle. **Countermeasure**: on
+"has been disabled", drop the line from `Brewfile.standard` with a dated comment; renames
+("tailscale was renamed to tailscale-app") get the new name the same day.
+
+## 42. "Use Chrome for Testing for automation" is advice for tests, not for agents on the web
+
+Google recommends Chrome for Testing for automation because it pins versions. An agent
+browsing real sites needs to look like a visitor instead: CfT reports Client Hints brands
+`Chromium` only (no `Google Chrome`), shows a permanent "for testing" infobar (viewport
+937 vs 1217px on the same screen) and can't sync a Google account. **Countermeasure**: the
+real Google Chrome with a dedicated `--user-data-dir` — Chrome 136's debugging-port block
+applies only to the default profile (2026-10-19).
+
+## 43. A Mac's Wi-Fi MAC changes when "Private Wi-Fi address" flips — DHCP bindings go stale
+
+A reboot or toggling the setting swaps between the hardware MAC and a private one (and
+back), and a router binding on one MAC silently stops applying.
+**Countermeasure**: bind the fixed IP to BOTH MACs (OpenWrt `dhcp.@host[].mac` takes a list),
+and set the network's private address to Off or Fixed.
+
+## 44. The owner's environment is not in the standard — sync it, don't re-type it
+
+Brewfile + defaults + agent-ready make machines *equal*; they do not carry the owner's Claude
+settings/agents/plugins/user MCP servers, personal `.zshrc`, or CC Switch providers. Doing that
+by hand on a new agent node took an hour and missed things twice (plugins, user MCP servers).
+**Countermeasure**: `scripts/sync-user-env.sh <target>` from the owner's main Mac. Per-machine
+choices are kept: settings hooks, the API provider in `env`, the CC Switch current provider.
+
+## 45. Remote snippets run in the target's login shell — zsh does not word-split `$var`
+
+`for row in $cur` iterated once over the whole multi-line string under zsh, so "keep the current
+provider" silently did nothing. **Countermeasure**: in snippets sent over SSH use
+`printf '%s\n' "$x" | while IFS=… read -r …` (or run them with `bash -c`), never `for … in $x`.
+
+## 46. Replacing a SQLite database file: remove its -wal/-shm and wait for the app to exit
+
+An app that flushes on quit, or a leftover `*.db-wal`, can replay old state into the new file.
+**Countermeasure**: quit the app and poll until its process is gone, `rm -f x.db-wal x.db-shm`,
+then `mv` the new file in; read the result back.
+
+## 47. Switching the Claude provider restarts nothing that is already running
+
+`~/.claude/settings.json` `env` is read when a session starts: open sessions — including any
+resident, long-running session — keep the old provider (and its quota). **Countermeasure**:
+after a switch, restart or close the open sessions (and any resident one).
+API-token providers also disable claude.ai connectors (and computer use) for those sessions.

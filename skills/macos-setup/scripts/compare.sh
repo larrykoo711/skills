@@ -33,8 +33,17 @@ LEDGER="${MACOS_SETUP_LEDGER:-$RAW/macos-setup-executed-$HOST.tsv}"
 PRECHK="$RAW/macos-setup-precheck-$HOST.tsv"
 PRECHECK_TSV="$PRECHK" bash "$SCRIPT_DIR/precheck.sh" || true
 
+# A blank Mac has no real python3: /usr/bin/python3 is a CLT stub that pops an install
+# dialog and fails — the report would silently not exist. Prerequisites first.
+if ! xcode-select -p >/dev/null 2>&1; then
+  fail "blank Mac: Xcode CLT missing, so the report cannot be generated (python3 is a stub)."
+  fail "install the prerequisites first:  pipeline.sh --prereqs-only   (CLT + Homebrew, nothing else)"
+  exit 1
+fi
+
 bash "$SCRIPT_DIR/collect.sh" "$CUR"
 
+rm -f "$OUT"     # a report left by an earlier run must never pass for this one
 /usr/bin/python3 - "$SKILL_DIR" "$CUR" "$OUT" "$HOST" "$PRECHK" "$LEDGER" <<'PYEOF'
 import json, re, sys, datetime, pathlib, os, glob
 skill, curf, outf, host, prechk, ledgerf = sys.argv[1:7]
@@ -281,6 +290,8 @@ pathlib.Path(outf).write_text(out, encoding="utf-8")
 todo = sum(1 for s in sections for r in s["rows"] if r["kind"] in ("install", "remove", "config"))
 print(f"OK {outf}  pending {todo}")
 PYEOF
+py_rc=$?
+[ "$py_rc" -eq 0 ] && [ -s "$OUT" ] || { fail "report generation failed (python exit $py_rc, file: $OUT)"; exit 1; }
 
 # Archive the report into the run's task dir (beside raw/), if one is active.
 [ -n "${MACOS_SETUP_TASK_DIR:-}" ] && [ -d "$MACOS_SETUP_TASK_DIR/artifacts" ] \
