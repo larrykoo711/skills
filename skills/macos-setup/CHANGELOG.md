@@ -5,6 +5,17 @@ All notable changes to **macos-setup** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-20
+
+### Added
+- **Optional cc-moss** (`pipeline.sh --with cc-moss`): installs
+  [cc-moss](https://github.com/larrykoo711/cc-moss) from its Homebrew tap and runs
+  `cc-moss install --yes` (hooks, tmux, starship, shell blocks, menubar app), so Claude Code
+  sessions survive crashes and reboots. Opt-in only; `MACOS_SETUP_CCMOSS_SKIP` leaves parts
+  the standard already owns alone, and an exclude-file line `cc-moss` skips it.
+  `verify.sh` runs `cc-moss doctor` wherever cc-moss is installed. Listed in
+  `standard/Brewfile.optional`.
+
 ## [0.2.0] - 2026-10-20
 
 Field lessons from setting up blank Macs remotely and turning one into an always-on,
@@ -63,5 +74,6 @@ agent-driven node, folded back into the public skill.
 
 First public release.
 
+[0.3.0]: https://github.com/larrykoo711/skills/compare/macos-setup-v0.2.0...macos-setup-v0.3.0
 [0.2.0]: https://github.com/larrykoo711/skills/compare/macos-setup-v0.1.0...macos-setup-v0.2.0
 [0.1.0]: https://github.com/larrykoo711/skills/releases/tag/macos-setup-v0.1.0

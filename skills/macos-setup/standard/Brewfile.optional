@@ -5,3 +5,6 @@
 
 cask "gcloud-cli"                # only for machines doing GCP work
 brew "stripe/stripe-cli/stripe"  # only for payments development
+# Recoverable Claude Code sessions + menubar app. Install with `pipeline.sh --with cc-moss`,
+# which also runs `cc-moss install --yes` (hooks, tmux, starship, shell, app).
+brew "larrykoo711/tap/cc-moss"

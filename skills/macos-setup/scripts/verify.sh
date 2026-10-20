@@ -70,6 +70,12 @@ if ! cfg_excluded "security:filevault"; then
   fdesetup status 2>/dev/null | grep -q On && report_ok "FileVault on" || report_finding "FileVault off"
 fi
 
+# ── cc-moss (only where it is installed: an opt-in extra) ──
+if have cc-moss; then
+  cc-moss doctor >/dev/null 2>&1 && report_ok "cc-moss doctor: all good" \
+    || report_finding "cc-moss doctor reports a problem (run: cc-moss doctor)"
+fi
+
 # ── Agent Device Ready layer (only on machines set up with --profile agent-node) ──
 [ "$(current_profile)" = agent-node ] && bash "$SCRIPT_DIR/agent-ready.sh" --check
 
