@@ -12,8 +12,7 @@ tap "steipete/tap"
 
 # ── version managers / runtimes ──
 brew "fnm"                  # Node version manager
-brew "goenv"                # Go version manager
-brew "go"
+brew "go"                   # Go straight from Homebrew (latest); no goenv
 brew "uv"                   # Python toolchain (env + tools)
 brew "python@3.13"          # pin the minor version — one Python across machines
 brew "pnpm"                 # ALL Node globals go through pnpm -g (node-globals.txt)
@@ -47,6 +46,15 @@ brew "dust"
 brew "procs"
 brew "sd"
 
+# ── shell standard: prompt + zsh plugins ──
+# These were previously on blocklist.txt (a superseded "retired CLI tools"
+# decision); the 2026-08-30 shell standard reinstates them. Keep the two
+# lists in agreement — a formula in both makes compare.sh propose removing
+# what the pipeline just installed.
+brew "starship"                 # prompt engine; .zshrc must init it LAST
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"  # must load after every other ZLE widget
+
 # ── cloud / k8s / devops ──
 brew "awscli"
 brew "helm"
@@ -61,7 +69,7 @@ brew "k6"
 brew "rclone"
 brew "railway"
 brew "aliyun-cli"
-brew "azure-cli"
+cask "azure-cli"           # a cask since Homebrew 7 (migrated out of homebrew/core)
 brew "cloudflared"
 
 # ── network diagnostics ──
@@ -84,6 +92,7 @@ brew "poppler"
 
 # ── App Store management ──
 brew "mas"
+brew "dockutil"             # Dock pinned apps + order (standard/dock-apps.txt, d03)
 
 # ── tap utilities ──
 brew "antoniorodr/memo/memo"
@@ -103,7 +112,9 @@ cask "cherry-studio"
 cask "cc-switch"
 cask "sourcetree"
 cask "orbstack"             # container runtime standard
-cask "tailscale"            # adopt only — NEVER uninstall/reinstall (pitfalls #4)
+cask "tailscale-app"        # renamed from "tailscale" (Homebrew 7); adopt only — NEVER uninstall/reinstall (pitfalls #4)
+cask "1password"            # password manager standard
+cask "1password-cli"        # `op` — agents use a service-account token, never the desktop unlock
 cask "rustdesk"             # open-source remote desktop (must-have); GPLv3, ships RustDesk.app
 cask "keepingyouawake"
 cask "appcleaner"
@@ -111,7 +122,7 @@ cask "monitorcontrol"
 # coconutbattery — moved to offline-apps.tsv (bring-your-own Plus build); free cask intentionally dropped
 cask "keka"
 cask "imageoptim"
-cask "gas-mask"
+# gas-mask — removed 2026-10-19: Homebrew disabled the cask (fails Gatekeeper since 2026-09-01)
 cask "qlmarkdown"
 cask "openineditor-lite"
 cask "openinterminal-lite"

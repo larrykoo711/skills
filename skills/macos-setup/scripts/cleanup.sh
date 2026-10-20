@@ -23,10 +23,13 @@ LEDGER="${MACOS_SETUP_LEDGER:-$RAW/macos-setup-executed-$HOST.tsv}"
 mkdir -p "$(dirname "$LEDGER")" 2>/dev/null || true
 ledger() { printf 'removed\t%s\t%s\n' "$1" "$2" >> "$LEDGER"; }
 
-LIST="$SKILL_DIR/standard/blocklist.txt"
+LIST="${MACOS_SETUP_BLOCKLIST:-$SKILL_DIR/standard/blocklist.txt}"   # override: tests only
 msg "════ blocklist cleanup @ $(scutil --get LocalHostName 2>/dev/null) — per-item confirm, 'y' executes ════"
 
-grep -vE '^\s*(#|$)' "$LIST" | while IFS=$'\t' read -r type name; do
+# The list arrives on fd 3, not stdin: some removals (brew uninstall of a cask with an
+# uninstall hook) read stdin and would swallow every item after them — and they get
+# </dev/null, or they would block on the terminal instead.
+while IFS=$'\t' read -r type name <&3; do
   # The order sheet exports short names — match both full (tap path) and short.
   if excluded "$name" || excluded "$(basename "$name")"; then
     msg "  skip $name (rejected by user)"; continue
@@ -49,12 +52,14 @@ grep -vE '^\s*(#|$)' "$LIST" | while IFS=$'\t' read -r type name; do
   read -r ans </dev/tty
   [ "$ans" = "y" ] || { msg "  keeping $name"; continue; }
   case "$type" in
-    formula)   brew uninstall "$name" >/dev/null 2>&1 && { report_ok "removed formula $name"; ledger formula "$name"; } || report_finding "remove $name failed (depended on? run: brew uninstall $name)" ;;
-    cask)      brew uninstall --cask "$name" >/dev/null 2>&1 && { report_ok "removed cask $name"; ledger cask "$name"; } || report_finding "remove cask $name failed" ;;
-    app)       rm -rf "/Applications/$name.app" && { report_ok "removed $name.app"; ledger app "$name"; } || report_finding "remove $name.app failed (permissions?)" ;;
-    pnpm-g)    pnpm remove -g "$name" >/dev/null 2>&1 && { report_ok "pnpm remove -g $name"; ledger pnpm-g "$name"; } || report_finding "pnpm remove $name failed" ;;
-    uv-tool)   uv tool uninstall "$name" >/dev/null 2>&1 && { report_ok "uv tool uninstall $name"; ledger uv-tool "$name"; } || report_finding "uv tool uninstall $name failed" ;;
+    formula)   brew uninstall "$name" </dev/null >/dev/null 2>&1 && { report_ok "removed formula $name"; ledger formula "$name"; } || report_finding "remove $name failed (depended on? run: brew uninstall $name)" ;;
+    cask)      brew uninstall --cask "$name" </dev/null >/dev/null 2>&1 && { report_ok "removed cask $name"; ledger cask "$name"; } || report_finding "remove cask $name failed" ;;
+    # App Store apps are root-owned: fall back to non-interactive sudo (agent-node has it).
+    app)       { rm -rf "/Applications/$name.app" 2>/dev/null || sudo -n rm -rf "/Applications/$name.app" 2>/dev/null; } && [ ! -e "/Applications/$name.app" ] \
+                 && { report_ok "removed $name.app"; ledger app "$name"; } || report_finding "remove $name.app failed (root-owned? needs sudo)" ;;
+    pnpm-g)    pnpm remove -g "$name" </dev/null >/dev/null 2>&1 && { report_ok "pnpm remove -g $name"; ledger pnpm-g "$name"; } || report_finding "pnpm remove $name failed" ;;
+    uv-tool)   uv tool uninstall "$name" </dev/null >/dev/null 2>&1 && { report_ok "uv tool uninstall $name"; ledger uv-tool "$name"; } || report_finding "uv tool uninstall $name failed" ;;
     local-bin) rm -f "$HOME/.local/bin/$name" && { report_ok "removed ~/.local/bin/$name"; ledger local-bin "$name"; } ;;
   esac
-done
+done 3< <(grep -vE '^\s*(#|$)' "$LIST")
 msg "════ cleanup done (leftover preferences: review with AppCleaner; app data like ~/.ollama is kept by design) ════"

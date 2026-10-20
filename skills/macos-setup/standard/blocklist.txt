@@ -5,10 +5,6 @@
 
 # ── formulas (superseded or retired CLI tools) ──
 formula	autojump
-formula	starship
-formula	sesh
-formula	zsh-autosuggestions
-formula	zsh-syntax-highlighting
 formula	yarn
 formula	openjdk@17
 formula	gradle
@@ -41,7 +37,6 @@ cask	mqttx
 cask	ngrok
 cask	lm-studio
 cask	dingtalk
-cask	notion
 cask	neteasemusic
 cask	mindmac
 cask	redis-insight
@@ -55,7 +50,6 @@ app	Lens
 app	wechatwebdevtools
 app	Ollama
 app	DingTalk
-app	Notion
 app	Obsidian
 app	flomo
 app	NeteaseMusic
@@ -74,7 +68,6 @@ app	Apifox
 app	WeChat 2
 app	CC Mate
 app	OpenClaw
-app	Ofox Claw
 app	QClaw
 app	TurboClaw
 app	Clawdy

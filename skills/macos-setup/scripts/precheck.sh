@@ -75,13 +75,14 @@ else
 fi
 
 # 7. App Store sign-in (hard prerequisite for mas, pitfalls #5).
-#    mas 7.x removed `account` — detect sign-in via `mas list` instead (pitfalls #10).
+#    The CLI cannot read sign-in state (pitfalls #10): a non-empty `mas list` proves it,
+#    an empty one proves nothing (signed in, no App Store apps yet). Never block on it.
 if command -v mas >/dev/null 2>&1; then
   if [ -n "$(mas list 2>/dev/null | head -1)" ]; then
     chk "App Store signed in (mas list works)" "App Store 已登录（mas list 可用）"
   else
-    manual "App Store not signed in: open the App Store app and sign in (mas cannot do it for you)" \
-           "App Store 未登录：请打开 App Store 应用登录（mas 无法代登）"
+    note "App Store sign-in unverifiable (no App Store apps installed yet) — if mas installs fail, sign in and re-run" \
+         "App Store 登录状态无法确认（本机尚无 App Store 应用）——若 mas 安装失败，登录后重跑即可"
   fi
 else
   # Not a human task yet — the pipeline installs mas itself, then re-checks sign-in.
@@ -92,6 +93,9 @@ fi
 # 8. Xcode Command Line Tools (Homebrew prerequisite)
 if xcode-select -p >/dev/null 2>&1; then
   chk "Xcode CLT installed" "Xcode CLT 已装"
+elif sudo -n true 2>/dev/null; then
+  note "Xcode CLT missing — the pipeline installs it headless (softwareupdate, passwordless sudo)" \
+       "Xcode CLT 未装——流水线会无人值守安装（softwareupdate，免密 sudo）"
 else
   manual "Xcode CLT missing: the Homebrew installer will pop a dialog — needs a human click" \
          "Xcode CLT 未装：Homebrew 安装时会弹窗，需要人工点击"
